@@ -1,0 +1,6 @@
+urls:
+- doc: Google
+  title: Google
+  url: http://google.co.uk/
+- title: Google
+  url: http://www.google.co.uk/
