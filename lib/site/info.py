@@ -5,7 +5,7 @@ import yaml
 from IPy import IP
 
 
-INFO_FOLDER = '../'
+INFO_FOLDER = '../deploy/'
 SSL_CERT_NAME = 'ssl-unified.crt'
 SSL_SERVER_KEY = 'server.key'
 
@@ -39,7 +39,7 @@ class SiteInfo(object):
         else:
             self.certificate_folder = os.path.join(INFO_FOLDER, 'ssl-cert')
         if not pillar_folder:
-            pillar_folder = os.path.join(INFO_FOLDER, 'salt-pillar')
+            pillar_folder = os.path.join(INFO_FOLDER, 'pillar')
         sites = self._load(pillar_folder)
         self._verify_sites(sites)
         self.db_ip = self._get_db_ip(pillar_folder, prefix)
