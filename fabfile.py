@@ -169,7 +169,7 @@ def haystack_index_clear(prefix, name):
 
 @task
 def valid(prefix, name):
-    """ For docs, see https://github.com/pkimber/cloud_docs """
+    """ For docs, see https://github.com/pkimber/docs """
     SiteInfo(prefix, name)
     print(green("The configuration for '{0}' appears to be valid").format(name))
 
