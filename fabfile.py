@@ -91,8 +91,10 @@ def create_db(prefix, site_name, table_space):
     If you are not using cloud block storage, then leave the ``table_space`` parameter empty.
 
     e.g.
-    fab -H 37.239.28.222 create_db:prefix=pkimber,site_name=hatherleigh_net,table_space=
-    fab -H 37.239.28.222 create_db:prefix=pkimber,site_name=hatherleigh_net,table_space=cbs
+    fab -H drop-temp create_db:prefix=pkimber,site_name=hatherleigh_net,table_space=
+
+    # if your would like to specify a Postgres table space name
+    fab -H drop-temp create_db:prefix=pkimber,site_name=hatherleigh_net,table_space=cbs
 
     psql parameters:
     -X  Do not read the start-up file
