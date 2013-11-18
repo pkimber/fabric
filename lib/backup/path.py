@@ -21,6 +21,9 @@ class Path(object):
         name = self._remove_ssh_user(name)
         self.EXTENSION = 'extension'
         self.options = {
+            'mysql': {
+                self.EXTENSION: 'sql',
+            },
             'postgres': {
                 self.EXTENSION: 'sql',
             },
