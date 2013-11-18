@@ -1,7 +1,4 @@
-import os
-
 from git import Repo
-#from git.utils import is_git_dir
 from git.exc import InvalidGitRepositoryError
 
 import hgapi
@@ -47,7 +44,11 @@ class Scm(object):
             result = True
         except hgapi.HgException as ev:
             if not 'no repository found' in ev.message:
-                raise ScmError("Unexpected exception thrown by 'hg_status'", ev)
+                raise ScmError(
+                    "Unexpected exception thrown by 'hg_status': {}".format(
+                        ev.message
+                    )
+                )
         return result
 
     def get_config(self):
