@@ -260,6 +260,19 @@ class TestSiteInfo(unittest.TestCase):
             )
         self.assertIn('LAN, so cant use SSL', cm.exception.value)
 
+    def test_lan_two_sites(self):
+        with self.assertRaises(InfoError) as cm:
+            SiteInfo(
+                'csw',
+                'na',
+                self._get_test_data_folder('data_lan_two_sites'),
+                self._get_test_cert_folder('cert')
+            )
+        self.assertIn(
+            'only install one site on the server',
+            cm.exception.value
+        )
+
     def test_no_duplicate_uwsgi_ports(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(

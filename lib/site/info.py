@@ -173,6 +173,33 @@ class SiteInfo(object):
                 "{}: server key not found '{}'".format(domain, server_key)
             )
 
+    def _verify_lan_not_ssl(self, site_name, settings):
+        """
+        If installing to a LAN, then cannot use SSL.
+
+        This is only because I haven't done the nginx settings yet!
+
+        """
+        if settings.get(self.SSL):
+            raise InfoError(
+                "site '{}' is set to run on a LAN, "
+                "so cant use SSL".format(site_name)
+            )
+
+    def _verify_lan_single_site(self, site_name, sites):
+        """
+        If installing to a LAN, then we can only install one site.
+
+        We are not setting 'server_name' in nginx because we want to accept
+        connections from anywhere (on the LAN)
+
+        """
+        if len(sites) > 1:
+            raise InfoError(
+                "site '{}' is set to run on a LAN, so we can only install "
+                "one site on the server.".format(site_name)
+            )
+
     def _verify_no_duplicate_uwsgi_ports(self, sites):
         ports = {}
         for site, settings in sites.items():
@@ -183,7 +210,8 @@ class SiteInfo(object):
             number = settings[self.UWSGI_PORT]
             if number in ports:
                 raise InfoError(
-                    "site '{}' has the same uWSGI port number as '{}'".format(site, ports[number])
+                    "site '{}' has the same uWSGI port number "
+                    "as '{}'".format(site, ports[number])
                 )
             else:
                 ports[number] = site
@@ -192,28 +220,29 @@ class SiteInfo(object):
         for site, settings in file_results.items():
             if site in results:
                 raise InfoError(
-                    "Duplicate site: '{}' is contained in more than one pillar file".format(
-                        site
-                    )
+                    "Duplicate site: '{}' is contained in more than one "
+                    "pillar file".format(site)
                 )
 
     def _verify_sites(self, sites):
         for site_name, settings in sites.items():
             if self.DB_PASS not in settings:
                 raise InfoError(
-                    "site '{}' does not have a database password".format(site_name)
+                    "site '{}' does not have a database "
+                    "password".format(site_name)
                 )
             if self.DOMAIN not in settings:
                 raise InfoError(
                     "site '{}' does not have a domain name".format(site_name)
                 )
             if self.SSL not in settings:
-                raise InfoError("site '{}' does not have SSL 'True' or 'False'".format(site_name))
+                raise InfoError(
+                    "site '{}' does not have SSL 'True' or "
+                    "'False'".format(site_name)
+                )
             if settings.get(self.LAN):
-                if settings.get(self.SSL):
-                    raise InfoError(
-                        "site '{}' is set to run on a LAN, so cant use SSL".format(site_name)
-                    )
+                self._verify_lan_not_ssl(site_name, settings)
+                self._verify_lan_single_site(site_name, sites)
             if settings.get(self.SSL):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
         self._verify_no_duplicate_uwsgi_ports(sites)
