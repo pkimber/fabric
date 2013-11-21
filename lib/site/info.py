@@ -27,6 +27,7 @@ class SiteInfo(object):
         self.DB_IP = 'db_ip'
         self.DB_PASS = 'db_pass'
         self.DOMAIN = 'domain'
+        self.LAN = 'lan'
         self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
         self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
         self.MEDIA_ROOT = 'media_root'
@@ -208,6 +209,11 @@ class SiteInfo(object):
                 )
             if self.SSL not in settings:
                 raise InfoError("site '{}' does not have SSL 'True' or 'False'".format(site_name))
+            if settings.get(self.LAN):
+                if settings.get(self.SSL):
+                    raise InfoError(
+                        "site '{}' is set to run on a LAN, so cant use SSL".format(site_name)
+                    )
             if settings.get(self.SSL):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
         self._verify_no_duplicate_uwsgi_ports(sites)

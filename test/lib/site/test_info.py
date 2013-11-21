@@ -250,6 +250,16 @@ class TestSiteInfo(unittest.TestCase):
             )
         self.assertIn('not found in folder', cm.exception.value)
 
+    def test_lan_and_ssl(self):
+        with self.assertRaises(InfoError) as cm:
+            SiteInfo(
+                'csw',
+                'na',
+                self._get_test_data_folder('data_lan_and_ssl'),
+                self._get_test_cert_folder('cert')
+            )
+        self.assertIn('LAN, so cant use SSL', cm.exception.value)
+
     def test_no_duplicate_uwsgi_ports(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
