@@ -186,20 +186,6 @@ class SiteInfo(object):
                 "so cant use SSL".format(site_name)
             )
 
-    def _verify_lan_single_site(self, site_name, sites):
-        """
-        If installing to a LAN, then we can only install one site.
-
-        We are not setting 'server_name' in nginx because we want to accept
-        connections from anywhere (on the LAN)
-
-        """
-        if len(sites) > 1:
-            raise InfoError(
-                "site '{}' is set to run on a LAN, so we can only install "
-                "one site on the server.".format(site_name)
-            )
-
     def _verify_no_duplicate_uwsgi_ports(self, sites):
         ports = {}
         for site, settings in sites.items():
@@ -242,7 +228,6 @@ class SiteInfo(object):
                 )
             if settings.get(self.LAN):
                 self._verify_lan_not_ssl(site_name, settings)
-                self._verify_lan_single_site(site_name, sites)
             if settings.get(self.SSL):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
         self._verify_no_duplicate_uwsgi_ports(sites)
