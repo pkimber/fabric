@@ -24,6 +24,7 @@ class SiteInfo(object):
 
     def __init__(self, prefix, site_name, pillar_folder=None, certificate_folder=None):
         # Some constants
+        self.ALLOWED_HOSTS = 'allowed_hosts'
         self.DB_IP = 'db_ip'
         self.DB_PASS = 'db_pass'
         self.DOMAIN = 'domain'
@@ -247,6 +248,7 @@ class SiteInfo(object):
         one without the '$' character.
         """
         return {
+            self.ALLOWED_HOSTS.upper(): self.domain(),
             self.DB_IP.upper(): self.db_ip,
             self.DB_PASS.upper(): self.password(),
             self.DOMAIN.upper(): self.domain(),

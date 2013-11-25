@@ -100,6 +100,7 @@ class TestSiteInfo(unittest.TestCase):
             self._get_test_cert_folder('cert')
         )
         expected = {
+            'ALLOWED_HOSTS': 'westcountrycoders.co.uk',
             'DB_IP': '10.11.10.10',
             'DB_PASS': 'myPassword',
             'DOMAIN': 'westcountrycoders.co.uk',
@@ -119,6 +120,7 @@ class TestSiteInfo(unittest.TestCase):
             self._get_test_cert_folder('cert')
         )
         expected = {
+            'ALLOWED_HOSTS': 'westcountrycoders.co.uk',
             'DB_IP': '',
             'DB_PASS': 'myPassword',
             'DOMAIN': 'westcountrycoders.co.uk',
