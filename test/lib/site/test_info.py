@@ -109,6 +109,7 @@ class TestSiteInfo(unittest.TestCase):
             'MAILGUN_SERVER_NAME': 'def',
             'MEDIA_ROOT': '/home/web/repo/project/csw_web/files/',
             'SECRET_KEY': 'jkl',
+            'SENDFILE_ROOT': 'mno',
         }
         self.assertDictEqual(expected, site_info.env())
 
@@ -129,6 +130,7 @@ class TestSiteInfo(unittest.TestCase):
             'MAILGUN_SERVER_NAME': 'def',
             'MEDIA_ROOT': '/home/web/repo/project/test_crm/files/',
             'SECRET_KEY': 'jkl',
+            'SENDFILE_ROOT': 'mno',
         }
         self.assertDictEqual(expected, site_info.env())
 

@@ -33,6 +33,7 @@ class SiteInfo(object):
         self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
         self.MEDIA_ROOT = 'media_root'
         self.SECRET_KEY = 'secret_key'
+        self.SENDFILE_ROOT = 'sendfile_root'
         self.SSL = 'ssl'
         self.UWSGI_PORT = 'uwsgi_port'
         # Use the default location if not supplied
@@ -257,6 +258,7 @@ class SiteInfo(object):
             self.MAILGUN_SERVER_NAME.upper(): 'def',
             self.MEDIA_ROOT.upper(): self.media_root,
             self.SECRET_KEY.upper(): 'jkl',
+            self.SENDFILE_ROOT.upper(): 'mno',
         }
 
     def domain(self):
