@@ -187,7 +187,7 @@ def solr_status():
 @task
 def ssl_cert(prefix, site_name):
     """
-    fab -H server ssl_cert:prefix=pkimber,name=hatherleigh_net
+    fab -H server ssl_cert:prefix=pkimber,site_name=hatherleigh_net
     """
     site_info = SiteInfo(prefix, site_name)
     if not site_info.ssl():
