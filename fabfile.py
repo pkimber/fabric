@@ -1,13 +1,15 @@
-from fabric.api import cd
-from fabric.api import abort
-from fabric.api import prompt
-from fabric.api import env
-from fabric.api import get
-from fabric.api import local
-from fabric.api import put
-from fabric.api import run
-from fabric.api import sudo
-from fabric.api import task
+from fabric.api import (
+    abort,
+    cd,
+    env,
+    get,
+    local,
+    prompt,
+    put,
+    run,
+    sudo,
+    task,
+)
 from fabric.colors import green
 from fabric.colors import yellow
 from fabric.contrib.files import exists
