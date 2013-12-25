@@ -1,0 +1,3 @@
+base:
+  'drop-*':
+    - db.settings

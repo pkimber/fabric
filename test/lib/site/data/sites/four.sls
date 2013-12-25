@@ -12,3 +12,10 @@ sites:
     secret_key: 'def'
     ssl: True
     uwsgi_port: '3032'
+  test_crm:
+    db_pass: myPassword
+    domain: westcountrycoders.co.uk
+    mailgun_receive: True
+    secret_key: 'abc'
+    ssl: False
+    uwsgi_port: '3033'

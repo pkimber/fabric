@@ -1,4 +1,5 @@
 sites:
+  rm
   csw_test:
     db_pass: 123
     domain: hatherleigh.info

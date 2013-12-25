@@ -17,7 +17,7 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_database_domain(self):
         site_info = SiteInfo(
-            'csw',
+            'drop-temp',
             'csw_web',
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
@@ -27,7 +27,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_database_domain_missing(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'na',
                 self._get_test_data_folder('data_missing_domain'),
                 self._get_test_cert_folder('cert')
@@ -37,7 +37,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_database_missing_ip(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'na',
                 self._get_test_data_folder('data_missing_db_ip'),
                 self._get_test_cert_folder('cert')
@@ -50,7 +50,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_database_missing_ip_file(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'na',
                 self._get_test_data_folder('data_missing_db_ip_file'),
                 self._get_test_cert_folder('cert')
@@ -63,7 +63,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_database_ip_invalid(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'csw_web',
                 self._get_test_data_folder('data_db_ip_invalid'),
                 self._get_test_cert_folder('cert')
@@ -75,7 +75,7 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_database_password(self):
         site_info = SiteInfo(
-            'csw',
+            'drop-temp',
             'csw_web',
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
@@ -85,7 +85,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_database_password_missing(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'na',
                 self._get_test_data_folder('data_missing_pass'),
                 self._get_test_cert_folder('cert')
@@ -94,7 +94,7 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_env(self):
         site_info = SiteInfo(
-            'csw',
+            'drop-temp',
             'csw_web',
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
@@ -115,14 +115,14 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_env_ssl_false(self):
         site_info = SiteInfo(
-            'pkimber',
+            'drop-temp',
             'test_crm',
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
         )
         expected = {
             'ALLOWED_HOSTS': 'westcountrycoders.co.uk',
-            'DB_IP': '',
+            'DB_IP': '10.11.10.10',
             'DB_PASS': 'myPassword',
             'DOMAIN': 'westcountrycoders.co.uk',
             'SSL': 'False',
@@ -136,7 +136,7 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_ssl(self):
         site_info = SiteInfo(
-            'csw',
+            'drop-temp',
             'csw_web',
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
@@ -145,7 +145,7 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_ssl_certificate_file(self):
         site_info = SiteInfo(
-            'csw',
+            'drop-temp',
             'csw_web',
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
@@ -157,7 +157,7 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_ssl_server_key(self):
         site_info = SiteInfo(
-            'csw',
+            'drop-temp',
             'csw_web',
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
@@ -170,7 +170,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_ssl_missing(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'na',
                 self._get_test_data_folder('data_missing_ssl')
             )
@@ -182,7 +182,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_ssl_missing_cert_folder(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'csw_web',
                 self._get_test_data_folder('data_missing_ssl_cert'),
                 self._get_test_cert_folder('cert_folder_missing')
@@ -195,7 +195,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_ssl_missing_site_cert_folder(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'csw_web',
                 self._get_test_data_folder('data_missing_ssl_cert'),
                 self._get_test_cert_folder('cert_site_folder_missing')
@@ -208,7 +208,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_ssl_site_cert_folder_is_file(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'csw_web',
                 self._get_test_data_folder('data_missing_ssl_cert'),
                 self._get_test_cert_folder('cert_site_folder_is_file')
@@ -221,7 +221,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_ssl_site_cert_missing(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'csw_web',
                 self._get_test_data_folder('data_missing_ssl_cert'),
                 self._get_test_cert_folder('cert_site_file_missing')
@@ -234,7 +234,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_ssl_site_server_key_missing(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'csw_web',
                 self._get_test_data_folder('data_missing_ssl_cert'),
                 self._get_test_cert_folder('cert_site_server_key_missing')
@@ -247,7 +247,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_site_unknown(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'cswsite_doesnotexist',
                 self._get_test_data_folder('data'),
                 self._get_test_cert_folder('cert')
@@ -257,7 +257,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_lan_and_ssl(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'na',
                 self._get_test_data_folder('data_lan_and_ssl'),
                 self._get_test_cert_folder('cert')
@@ -267,7 +267,7 @@ class TestSiteInfo(unittest.TestCase):
     def test_no_duplicate_uwsgi_ports(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'na',
                 self._get_test_data_folder('data_dup_uwsgi_port'),
                 self._get_test_cert_folder('cert')
@@ -275,14 +275,12 @@ class TestSiteInfo(unittest.TestCase):
         self.assertIn('has the same uWSGI port number', cm.exception.value)
 
     def test_no_duplicate_sites(self):
-        with self.assertRaises(InfoError) as cm:
-            SiteInfo(
-                'csw',
-                'na',
-                self._get_test_data_folder('data_dup_site'),
-                self._get_test_cert_folder('cert')
-            )
-        self.assertIn('Duplicate site', cm.exception.value)
+        """
+        Cannot do this check as PyYAML doesn't throw an error when it finds a
+        duplicate key:
+        https://bitbucket.org/xi/pyyaml/issue/9/ignore-duplicate-keys-and-send-warning-or
+        """
+        self.assertTrue(True)
 
     def test_no_duplicate_sites_in_file(self):
         """
@@ -295,9 +293,9 @@ class TestSiteInfo(unittest.TestCase):
     def test_no_sites(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
-                'csw',
+                'drop-temp',
                 'na',
-                self._get_test_data_folder('does_not_exist'),
+                self._get_test_data_folder('data_sites_do_not_exist'),
                 self._get_test_cert_folder('cert')
             )
-        self.assertIn('No sites found in folder', cm.exception.value)
+        self.assertIn("Cannot find 'sites' key", cm.exception.value)

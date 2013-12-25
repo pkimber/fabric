@@ -1,5 +1,6 @@
 sites:
   csw_mail:
+
     domain: westcountrycoders.co.uk
     mailgun_receive: True
     secret_key: 'abc'

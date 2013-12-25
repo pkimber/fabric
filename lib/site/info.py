@@ -1,3 +1,4 @@
+import fnmatch
 import glob
 import os
 import yaml
@@ -22,7 +23,7 @@ class InfoError(Exception):
 
 class SiteInfo(object):
 
-    def __init__(self, prefix, site_name, pillar_folder=None, certificate_folder=None):
+    def __init__(self, server_name, site_name, pillar_folder=None, certificate_folder=None):
         # Some constants
         self.ALLOWED_HOSTS = 'allowed_hosts'
         self.DB_IP = 'db_ip'
@@ -43,31 +44,32 @@ class SiteInfo(object):
             self.certificate_folder = os.path.join(INFO_FOLDER, 'ssl-cert')
         if not pillar_folder:
             pillar_folder = os.path.join(INFO_FOLDER, 'pillar')
-        sites = self._load(pillar_folder)
-        self._verify_sites(sites)
-        self.db_ip = self._get_db_ip(pillar_folder, prefix)
+        pillar_data = self._load_pillar(pillar_folder, server_name)
+        self._verify_sites(pillar_data)
+        self.db_ip = self._get_db_ip(pillar_data)
         self.media_root = self._get_media_root(site_name)
-        self.site_info = self._get_site_info(site_name, sites)
+        self.site_info = self._get_site_info(site_name, pillar_data)
 
-    def _get_db_ip(self, pillar_folder, prefix):
-        settings_file = os.path.join(
-            pillar_folder, 'db', prefix, 'settings.sls'
-        )
-        if not os.path.isfile(settings_file):
-            raise InfoError(
-                "Cannot find: '{}' (this file should contain the IP "
-                "address of the database server)".format(settings_file)
-            )
-        listen_address = None
-        with open(settings_file, 'r') as f:
-            data = yaml.load(f)
-            settings = data.get('postgres_settings', None)
-            if settings:
-                listen_address = settings.get('listen_address', None)
+    def _get_db_ip(self, pillar_data):
+        settings = self._get_pillar_data(pillar_data, 'postgres_settings')
+        #settings_file = os.path.join(
+        #    pillar_folder, 'db', prefix, 'settings.sls'
+        #)
+        #if not os.path.isfile(settings_file):
+        #    raise InfoError(
+        #        "Cannot find: '{}' (this file should contain the IP "
+        #        "address of the database server)".format(settings_file)
+        #    )
+        #listen_address = None
+        #with open(settings_file, 'r') as f:
+        #    data = yaml.load(f)
+        #    settings = data.get('postgres_settings', None)
+        #    if settings:
+        #        listen_address = settings.get('listen_address', None)
+        listen_address = settings.get('listen_address', None)
         if not listen_address:
             raise InfoError(
-                "Cannot find 'postgres_settings', 'listen_address' "
-                "in: '{}'".format(settings_file)
+                "Cannot find 'postgres_settings', 'listen_address'."
             )
         if listen_address == 'localhost':
             return ''
@@ -77,13 +79,22 @@ class SiteInfo(object):
             else:
                 raise InfoError(
                     "'postgres_settings', 'listen_address' "
-                    "is an invalid IP address: '{}'".format(settings_file)
+                    "is an invalid IP address '{}'".format(listen_address)
                 )
 
     def _get_media_root(self, site_name):
         return '/home/web/repo/project/{}/files/'.format(site_name)
 
-    def _get_site_info(self, site_name, sites):
+    def _get_pillar_data(self, pillar_data, key):
+        result = pillar_data.get(key, None)
+        if not result:
+            raise InfoError(
+                "Cannot find '{}' key in the pillar data.".format(key)
+            )
+        return result
+
+    def _get_site_info(self, site_name, pillar_data):
+        sites = self._get_pillar_data(pillar_data, 'sites')
         if site_name not in sites:
             raise InfoError("Site '{}' not found in folder".format(site_name))
         return sites[site_name]
@@ -100,34 +111,61 @@ class SiteInfo(object):
         except ValueError:
             return False
 
-    def _load(self, pillar_folder):
-        sites_folder = os.path.join(pillar_folder, 'sites')
+    def _load_pillar(self, pillar_folder, server_name):
         result = {}
-        file_list = glob.glob(os.path.join(sites_folder, '*.sls'))
-        for name in file_list:
-            with open(name, 'r') as f:
-                data = yaml.load(f)
-                file_result = self._parse(name, data)
-                self._verify_no_duplicate_site(result, file_result)
-                result.update(file_result)
-        if not result:
-            raise InfoError(
-                "No sites found in folder: '{}'".format(sites_folder)
-            )
+        with open(os.path.join(pillar_folder, 'top.sls'), 'r') as f:
+            data = yaml.load(f.read())
+            base = data.get('base')
+            for k, v in base.iteritems():
+                if fnmatch.fnmatch(server_name, k):
+                    for name in v:
+                        names = name.split('.')
+                        file_name = os.path.join(pillar_folder, *names)
+                        file_name = file_name + '.sls'
+                        with open(file_name, 'r') as fa:
+                            attr = yaml.load(fa.read())
+                            if len(attr) > 1:
+                                raise InfoError(
+                                    "Unexpected state: 'sls' file contains more "
+                                    "than one key: {}".format(file_name)
+                                )
+                            key = attr.iterkeys().next()
+                            if key in result:
+                                raise InfoError(
+                                    "key '{}' is already contained in 'result'"
+                                    ": {}".format(key, file_name)
+                                )
+                            result.update(attr)
         return result
 
-    def _parse(self, file_name, data):
-        site = data.get('sites')
-        if not site:
-            raise InfoError(
-                "pillar file '{}' not in the correct format: {}".format(
-                    file_name, data
-                )
-            )
-        result = {}
-        for key, settings in site.iteritems():
-            result[key] = settings
-        return result
+    #def _load(self, pillar_folder):
+    #    sites_folder = os.path.join(pillar_folder, 'sites')
+    #    result = {}
+    #    file_list = glob.glob(os.path.join(sites_folder, '*.sls'))
+    #    for name in file_list:
+    #        with open(name, 'r') as f:
+    #            data = yaml.load(f)
+    #            file_result = self._parse(name, data)
+    #            self._verify_no_duplicate_site(result, file_result)
+    #            result.update(file_result)
+    #    if not result:
+    #        raise InfoError(
+    #            "No sites found in folder: '{}'".format(sites_folder)
+    #        )
+    #    return result
+
+    #def _parse(self, file_name, data):
+    #    site = data.get('sites')
+    #    if not site:
+    #        raise InfoError(
+    #            "pillar file '{}' not in the correct format: {}".format(
+    #                file_name, data
+    #            )
+    #        )
+    #    result = {}
+    #    for key, settings in site.iteritems():
+    #        result[key] = settings
+    #    return result
 
     def _ssl_cert_folder(self, domain):
         return os.path.join(self.certificate_folder, domain)
@@ -212,7 +250,8 @@ class SiteInfo(object):
                     "pillar file".format(site)
                 )
 
-    def _verify_sites(self, sites):
+    def _verify_sites(self, pillar_data):
+        sites = self._get_pillar_data(pillar_data, 'sites')
         for site_name, settings in sites.items():
             if self.DB_PASS not in settings:
                 raise InfoError(
