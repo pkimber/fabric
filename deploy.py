@@ -74,9 +74,6 @@ def run_post_deploy_test(site_name):
 
 
 def deploy_django(folder_info, site_info, prefix, version):
-    command = DjangoCommand(
-        folder_info.install(), folder_info.install_venv(), site_info
-    )
     # download and extract main package
     download_package(
         site_info.site_name(),
@@ -99,17 +96,20 @@ def deploy_django(folder_info, site_info, prefix, version):
     install_requirements(
         prefix, folder_info.install(), folder_info.install_venv()
     )
-    # collect static
+    command = DjangoCommand(
+        folder_info.install(), folder_info.install_venv(), site_info
+    )
     command.collect_static()
-    return command
-
-def django_post_deploy(command, folder_info):
     # migrate database and init project
     command.syncdb()
     command.migrate_database()
     command.init_project()
+
+
+def django_post_deploy(command, folder_info):
     # re-start uwsgi
     touch_vassal_ini(folder_info.vassal())
+
 
 @task
 def deploy(server_name, site_name, prefix, version):
@@ -127,12 +127,12 @@ def deploy(server_name, site_name, prefix, version):
         run('mkdir {0}'.format(folder_info.deploy()))
     run('mkdir {}'.format(folder_info.install()))
     run('mkdir {0}'.format(folder_info.install_temp()))
-    # return django command runner
-    command = deploy_django(folder_info, site_info, prefix, version)
+    if site_info.is_django():
+        deploy_django(folder_info, site_info, prefix, version)
     # symbolic link
     link_install_to_live_folder(folder_info.install(), folder_info.live())
-    # django
-    django_post_deploy(command, folder_info)
+    if site_info.is_django():
+        django_post_deploy(command, folder_info)
     # Post deploy
     run_post_deploy_test(site_name)
 
