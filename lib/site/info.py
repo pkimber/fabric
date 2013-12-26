@@ -157,11 +157,18 @@ class SiteInfo(object):
             SSL_SERVER_KEY
         )
 
-    def _verify_profile(self, sites):
+    def _verify_profile(self, pillar_data):
+        has_django = False
+        has_php = False
+        sites = self._get_pillar_data(pillar_data, self.SITES)
         for name, settings in sites.items():
             profile = settings.get(self.PROFILE, None)
             if profile:
-                if not profile in (self.DJANGO, self.PHP):
+                if profile == self.DJANGO:
+                    has_django = True
+                elif profile == self.PHP:
+                    has_php = True
+                else:
                     raise InfoError(
                         "unknown 'profile' for site '{}'"
                         "(should be 'django' or 'php')".format(name)
@@ -171,6 +178,22 @@ class SiteInfo(object):
                     "site must have a 'profile' ('django' or 'php')"
                     ": '{}'".format(name)
                 )
+        if has_django:
+            is_django = pillar_data.get(self.DJANGO, None)
+            if not is_django:
+                raise InfoError(
+                    "cannot find '{}' config key in the pillar "
+                    "data.".format(self.DJANGO)
+                )
+        if has_php:
+            is_php = pillar_data.get(self.PHP, None)
+            if not is_php:
+                raise InfoError(
+                    "cannot find '{}' config key in the pillar "
+                    "data.".format(self.PHP)
+                )
+        #is_django = self._get_pillar_data(pillar_data, self.DJANGO)
+        #is_php = self._get_pillar_data(pillar_data, self.PHP)
 
     def _verify_has_ssl_certificate(self, domain):
         if not os.path.exists(self.certificate_folder):
@@ -293,7 +316,7 @@ class SiteInfo(object):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
         if self._is_postgres(pillar_data):
             self._verify_postgres_settings(pillar_data)
-        self._verify_profile(sites)
+        self._verify_profile(pillar_data)
         self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):
