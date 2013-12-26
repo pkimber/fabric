@@ -96,7 +96,11 @@ class SiteInfo(object):
     def _get_site_info(self, site_name, pillar_data):
         sites = self._get_pillar_data(pillar_data, 'sites')
         if site_name not in sites:
-            raise InfoError("Site '{}' not found in folder".format(site_name))
+            raise InfoError(
+                "site '{}' not found in folder: {}".format(
+                    site_name, sites.keys()
+                )
+            )
         return sites[site_name]
 
     def _get_setting(self, key):

@@ -172,10 +172,13 @@ def haystack_index_clear(prefix, name):
 
 
 @task
-def valid(prefix, name):
+def valid(server_name, site_name):
     """ For docs, see https://github.com/pkimber/docs """
-    SiteInfo(prefix, name)
-    print(green("The configuration for '{0}' appears to be valid").format(name))
+    SiteInfo(server_name, site_name)
+    print(green(
+        "The configuration for '{}' appears to be valid"
+        "").format(site_name)
+    )
 
 
 @task
