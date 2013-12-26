@@ -38,7 +38,7 @@ class TestSiteInfo(unittest.TestCase):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(
                 'drop-temp',
-                'na',
+                'csw_web',
                 self._get_test_data_folder('data_missing_db_ip'),
                 self._get_test_cert_folder('cert')
             )

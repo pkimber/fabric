@@ -31,10 +31,13 @@ class SiteInfo(object):
         self.DB_TYPE = 'db_type'
         self.DOMAIN = 'domain'
         self.LAN = 'lan'
+        self.LISTEN_ADDRESS = 'listen_address'
+        self.LOCALHOST = 'localhost'
         self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
         self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
         self.MEDIA_ROOT = 'media_root'
         self.PHP = 'php'
+        self.POSTGRES_SETTINGS = 'postgres_settings'
         self.SECRET_KEY = 'secret_key'
         self.SENDFILE_ROOT = 'sendfile_root'
         self.SSL = 'ssl'
@@ -53,7 +56,15 @@ class SiteInfo(object):
         self.site_info = self._get_site_info(site_name, pillar_data)
 
     def _get_db_ip(self, pillar_data):
-        settings = self._get_pillar_data(pillar_data, 'postgres_settings')
+        settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
+        listen_address = settings[self.LISTEN_ADDRESS]
+        if listen_address == self.LOCALHOST:
+            return ''
+        else:
+            return str(listen_address)
+
+    def _verify_postgres_settings(self, pillar_data):
+        settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
         #settings_file = os.path.join(
         #    pillar_folder, 'db', prefix, 'settings.sls'
         #)
@@ -68,16 +79,16 @@ class SiteInfo(object):
         #    settings = data.get('postgres_settings', None)
         #    if settings:
         #        listen_address = settings.get('listen_address', None)
-        listen_address = settings.get('listen_address', None)
+        listen_address = settings.get(self.LISTEN_ADDRESS, None)
         if not listen_address:
             raise InfoError(
                 "Cannot find 'postgres_settings', 'listen_address'."
             )
-        if listen_address == 'localhost':
-            return ''
+        if listen_address == self.LOCALHOST:
+            pass
         else:
             if self.is_valid_ip(listen_address):
-                return str(listen_address)
+                pass
             else:
                 raise InfoError(
                     "'postgres_settings', 'listen_address' "
@@ -259,6 +270,7 @@ class SiteInfo(object):
                 )
 
     def _verify_sites(self, pillar_data):
+        is_postgres = False
         sites = self._get_pillar_data(pillar_data, 'sites')
         for site_name, settings in sites.items():
             if self.DB_PASS not in settings:
@@ -271,7 +283,12 @@ class SiteInfo(object):
                     "site '{}' does not have a database "
                     "type".format(site_name)
                 )
-            if not settings[self.DB_TYPE] in ('mysql', 'psql'):
+            database_type = settings[self.DB_TYPE]
+            if database_type == 'mysql':
+                pass
+            elif database_type == 'psql':
+                is_postgres = True
+            else:
                 raise InfoError(
                     "site '{}' has an unknown database "
                     "type: {}".format(site_name, settings[self.DB_TYPE])
@@ -289,6 +306,8 @@ class SiteInfo(object):
                 self._verify_lan_not_ssl(site_name, settings)
             if settings.get(self.SSL):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
+        if is_postgres:
+            self._verify_postgres_settings(pillar_data)
         self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):

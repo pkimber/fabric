@@ -16,7 +16,7 @@ sites:
     uwsgi_port: '3032'
   test_crm:
     db_pass: myPassword
-    db_type: psql
+    db_type: mysql
     domain: westcountrycoders.co.uk
     mailgun_receive: True
     secret_key: 'abc'
