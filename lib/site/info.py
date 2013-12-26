@@ -38,8 +38,10 @@ class SiteInfo(object):
         self.MEDIA_ROOT = 'media_root'
         self.PHP = 'php'
         self.POSTGRES_SETTINGS = 'postgres_settings'
+        self.PSQL = 'psql'
         self.SECRET_KEY = 'secret_key'
         self.SENDFILE_ROOT = 'sendfile_root'
+        self.SITES = 'sites'
         self.SSL = 'ssl'
         self.UWSGI_PORT = 'uwsgi_port'
         # Use the default location if not supplied
@@ -56,12 +58,15 @@ class SiteInfo(object):
         self.site_info = self._get_site_info(site_name, pillar_data)
 
     def _get_db_ip(self, pillar_data):
-        settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
-        listen_address = settings[self.LISTEN_ADDRESS]
-        if listen_address == self.LOCALHOST:
-            return ''
+        if self._is_postgres(pillar_data):
+            settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
+            listen_address = settings[self.LISTEN_ADDRESS]
+            if listen_address == self.LOCALHOST:
+                return ''
+            else:
+                return str(listen_address)
         else:
-            return str(listen_address)
+            return 'no ip for non-postgres database'
 
     def _get_media_root(self, site_name):
         return '/home/web/repo/project/{}/files/'.format(site_name)
@@ -75,7 +80,7 @@ class SiteInfo(object):
         return result
 
     def _get_site_info(self, site_name, pillar_data):
-        sites = self._get_pillar_data(pillar_data, 'sites')
+        sites = self._get_pillar_data(pillar_data, self.SITES)
         if site_name not in sites:
             raise InfoError(
                 "site '{}' not found in folder: {}".format(
@@ -88,6 +93,17 @@ class SiteInfo(object):
         if key not in self.site_info:
             raise InfoError("No '{}' setting for site".format(key))
         return self.site_info[key]
+
+    def _is_postgres(self, pillar_data):
+        """do any of the sites use postgres"""
+        result = False
+        sites = self._get_pillar_data(pillar_data, self.SITES)
+        for site_name, settings in sites.items():
+            database_type = settings[self.DB_TYPE]
+            if database_type == self.PSQL:
+                result = True
+                break
+        return result
 
     def is_valid_ip(self, ip):
         try:
@@ -227,8 +243,7 @@ class SiteInfo(object):
                 )
 
     def _verify_sites(self, pillar_data):
-        is_postgres = False
-        sites = self._get_pillar_data(pillar_data, 'sites')
+        sites = self._get_pillar_data(pillar_data, self.SITES)
         for site_name, settings in sites.items():
             if self.DB_PASS not in settings:
                 raise InfoError(
@@ -240,12 +255,7 @@ class SiteInfo(object):
                     "site '{}' does not have a database "
                     "type".format(site_name)
                 )
-            database_type = settings[self.DB_TYPE]
-            if database_type == 'mysql':
-                pass
-            elif database_type == 'psql':
-                is_postgres = True
-            else:
+            if not settings[self.DB_TYPE] in ('mysql', self.PSQL):
                 raise InfoError(
                     "site '{}' has an unknown database "
                     "type: {}".format(site_name, settings[self.DB_TYPE])
@@ -263,7 +273,7 @@ class SiteInfo(object):
                 self._verify_lan_not_ssl(site_name, settings)
             if settings.get(self.SSL):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
-        if is_postgres:
+        if self._is_postgres(pillar_data):
             self._verify_postgres_settings(pillar_data)
         self._verify_no_duplicate_uwsgi_ports(sites)
 
