@@ -92,6 +92,16 @@ class TestSiteInfo(unittest.TestCase):
             )
         self.assertIn('does not have a database password', cm.exception.value)
 
+    def test_database_type_invalid(self):
+        with self.assertRaises(InfoError) as cm:
+            SiteInfo(
+                'drop-temp',
+                'csw_web',
+                self._get_test_data_folder('data_invalid_db_type'),
+                self._get_test_cert_folder('cert')
+            )
+        self.assertIn('unknown database type', cm.exception.value)
+
     def test_database_type_missing(self):
         with self.assertRaises(InfoError) as cm:
             SiteInfo(

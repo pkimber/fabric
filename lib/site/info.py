@@ -271,6 +271,11 @@ class SiteInfo(object):
                     "site '{}' does not have a database "
                     "type".format(site_name)
                 )
+            if not settings[self.DB_TYPE] in ('mysql', 'psql'):
+                raise InfoError(
+                    "site '{}' has an unknown database "
+                    "type: {}".format(site_name, settings[self.DB_TYPE])
+                )
             if self.DOMAIN not in settings:
                 raise InfoError(
                     "site '{}' does not have a domain name".format(site_name)
