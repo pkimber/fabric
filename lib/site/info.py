@@ -187,7 +187,7 @@ class SiteInfo(object):
             if not is_django:
                 raise InfoError(
                     "cannot find '{}' config key in the pillar "
-                    "data.  The 'config' file is a global variable used by "
+                    "data.  The config is a global variable used by "
                     "salt when setting up server state".format(self.DJANGO)
                 )
         if has_php:
@@ -195,7 +195,7 @@ class SiteInfo(object):
             if not is_php:
                 raise InfoError(
                     "cannot find '{}' config key in the pillar "
-                    "data.  The 'config' file is a global variable used by "
+                    "data.  The config is a global variable used by "
                     "salt when setting up server state".format(self.PHP)
                 )
 
@@ -301,8 +301,9 @@ class SiteInfo(object):
     def _verify_database_settings_mysql(self, pillar_data):
         if not pillar_data.get(self.MYSQL_SERVER, None):
             raise InfoError(
-                "Cannot find '{}' config in the "
-                "pillar.".format(self.MYSQL_SERVER)
+                "Cannot find '{}' config in the pillar. "
+                "The config is a global variable used by salt when setting "
+                "up server state".format(self.MYSQL_SERVER)
             )
 
     def _verify_database_settings_postgres(self, pillar_data):
@@ -324,8 +325,9 @@ class SiteInfo(object):
                 )
         if not pillar_data.get(self.POSTGRES_SERVER, None):
             raise InfoError(
-                "Cannot find '{}' config in the "
-                "pillar.".format(self.POSTGRES_SERVER)
+                "Cannot find '{}' config in the pillar. "
+                "The config is a global variable used by salt when setting "
+                "up server state".format(self.POSTGRES_SERVER)
             )
 
     def _verify_sites(self, pillar_data):
