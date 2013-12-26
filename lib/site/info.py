@@ -63,38 +63,6 @@ class SiteInfo(object):
         else:
             return str(listen_address)
 
-    def _verify_postgres_settings(self, pillar_data):
-        settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
-        #settings_file = os.path.join(
-        #    pillar_folder, 'db', prefix, 'settings.sls'
-        #)
-        #if not os.path.isfile(settings_file):
-        #    raise InfoError(
-        #        "Cannot find: '{}' (this file should contain the IP "
-        #        "address of the database server)".format(settings_file)
-        #    )
-        #listen_address = None
-        #with open(settings_file, 'r') as f:
-        #    data = yaml.load(f)
-        #    settings = data.get('postgres_settings', None)
-        #    if settings:
-        #        listen_address = settings.get('listen_address', None)
-        listen_address = settings.get(self.LISTEN_ADDRESS, None)
-        if not listen_address:
-            raise InfoError(
-                "Cannot find 'postgres_settings', 'listen_address'."
-            )
-        if listen_address == self.LOCALHOST:
-            pass
-        else:
-            if self.is_valid_ip(listen_address):
-                pass
-            else:
-                raise InfoError(
-                    "'postgres_settings', 'listen_address' "
-                    "is an invalid IP address '{}'".format(listen_address)
-                )
-
     def _get_media_root(self, site_name):
         return '/home/web/repo/project/{}/files/'.format(site_name)
 
@@ -154,35 +122,6 @@ class SiteInfo(object):
                                 )
                             result.update(attr)
         return result
-
-    #def _load(self, pillar_folder):
-    #    sites_folder = os.path.join(pillar_folder, 'sites')
-    #    result = {}
-    #    file_list = glob.glob(os.path.join(sites_folder, '*.sls'))
-    #    for name in file_list:
-    #        with open(name, 'r') as f:
-    #            data = yaml.load(f)
-    #            file_result = self._parse(name, data)
-    #            self._verify_no_duplicate_site(result, file_result)
-    #            result.update(file_result)
-    #    if not result:
-    #        raise InfoError(
-    #            "No sites found in folder: '{}'".format(sites_folder)
-    #        )
-    #    return result
-
-    #def _parse(self, file_name, data):
-    #    site = data.get('sites')
-    #    if not site:
-    #        raise InfoError(
-    #            "pillar file '{}' not in the correct format: {}".format(
-    #                file_name, data
-    #            )
-    #        )
-    #    result = {}
-    #    for key, settings in site.iteritems():
-    #        result[key] = settings
-    #    return result
 
     def _ssl_cert_folder(self, domain):
         return os.path.join(self.certificate_folder, domain)
@@ -267,6 +206,24 @@ class SiteInfo(object):
                 raise InfoError(
                     "Duplicate site: '{}' is contained in more than one "
                     "pillar file".format(site)
+                )
+
+    def _verify_postgres_settings(self, pillar_data):
+        settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
+        listen_address = settings.get(self.LISTEN_ADDRESS, None)
+        if not listen_address:
+            raise InfoError(
+                "Cannot find 'postgres_settings', 'listen_address'."
+            )
+        if listen_address == self.LOCALHOST:
+            pass
+        else:
+            if self.is_valid_ip(listen_address):
+                pass
+            else:
+                raise InfoError(
+                    "'postgres_settings', 'listen_address' "
+                    "is an invalid IP address '{}'".format(listen_address)
                 )
 
     def _verify_sites(self, pillar_data):
