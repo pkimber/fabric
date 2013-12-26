@@ -1,5 +1,6 @@
 sites:
   csw_web:
+    profile: django
     db_pass: myPassword
     db_type: psql
     domain: westcountrycoders.co.uk

@@ -1,5 +1,6 @@
 sites:
   csw_fourteen:
+    profile: django
     db_pass: 456
     db_type: psql
     domain: westcountrycoders.co.uk

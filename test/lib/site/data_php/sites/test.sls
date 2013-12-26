@@ -1,5 +1,6 @@
 sites:
   hatherleigh_info:
+    profile: django
     db_pass: myPassword
     db_type: mysql
     domain: hatherleigh.info

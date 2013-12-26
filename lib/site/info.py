@@ -30,6 +30,7 @@ class SiteInfo(object):
         self.DB_IP = 'db_ip'
         self.DB_PASS = 'db_pass'
         self.DB_TYPE = 'db_type'
+        self.DJANGO = 'django'
         self.DOMAIN = 'domain'
         self.LAN = 'lan'
         self.LISTEN_ADDRESS = 'listen_address'
@@ -39,6 +40,7 @@ class SiteInfo(object):
         self.MEDIA_ROOT = 'media_root'
         self.PHP = 'php'
         self.POSTGRES_SETTINGS = 'postgres_settings'
+        self.PROFILE = 'profile'
         self.PSQL = 'psql'
         self.SECRET_KEY = 'secret_key'
         self.SENDFILE_ROOT = 'sendfile_root'
@@ -154,6 +156,21 @@ class SiteInfo(object):
             self._ssl_cert_folder(domain),
             SSL_SERVER_KEY
         )
+
+    def _verify_profile(self, sites):
+        for name, settings in sites.items():
+            profile = settings.get(self.PROFILE, None)
+            if profile:
+                if not profile in (self.DJANGO, self.PHP):
+                    raise InfoError(
+                        "unknown 'profile' for site '{}'"
+                        "(should be 'django' or 'php')".format(name)
+                    )
+            else:
+                raise InfoError(
+                    "site must have a 'profile' ('django' or 'php')"
+                    ": '{}'".format(name)
+                )
 
     def _verify_has_ssl_certificate(self, domain):
         if not os.path.exists(self.certificate_folder):
@@ -277,6 +294,7 @@ class SiteInfo(object):
         if self._is_postgres(pillar_data):
             self._verify_postgres_settings(pillar_data)
         self._verify_no_duplicate_uwsgi_ports(sites)
+        self._verify_profile(sites)
 
     def env(self):
         """

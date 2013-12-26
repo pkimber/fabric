@@ -1,5 +1,6 @@
 sites:
   csw_mail:
+    profile: django
     db_pass: 456
     db_type: psql
     domain: westcountrycoders.co.uk
@@ -8,6 +9,7 @@ sites:
     ssl: True
     uwsgi_port: '3031'
   csw_marking:
+    profile: django
     db_pass: 456
     db_type: psql
     domain: westcountrycycles.co.uk
@@ -15,6 +17,7 @@ sites:
     ssl: True
     uwsgi_port: '3032'
   csw_mail:
+    profile: django
     db_pass: 456
     db_type: psql
     domain: westcountrycoders.co.uk
