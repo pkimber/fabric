@@ -45,31 +45,45 @@ def _local_postgres_user_exists(database_name):
 
 
 @task
-def backup_db(site_name):
-    """
-    To backup the 'csw_web' database on the 'rs.web' server:
-    fab -H rs.db backup_db:csw_web
-    """
+def backup_db(server_name, site_name):
+    """ For docs, see https://github.com/pkimber/docs """
     print(green("Backup '{}' on '{}'").format(site_name, env.host_string))
-    path = Path(site_name, 'postgres')
+    site_info = SiteInfo(server_name, site_name)
+    db_type = 'postgres'
+    if site_info.is_mysql():
+        db_type = 'mysql'
+    path = Path(site_name, db_type)
     run('mkdir -p {0}'.format(path.remote_folder()))
-    run('pg_dump -U postgres {0} -f {1}'.format(
-        site_name, path.remote_file()
+    if site_info.is_mysql():
+        backup = site_info.backup()
+        run('mysqldump --host={} --user={} --password={} {} > {}'.format(
+            backup['host'],
+            backup['user'],
+            backup['pass'],
+            backup['name'],
+            path.remote_file(),
+        ))
+    else:
+        run('pg_dump -U postgres {0} -f {1}'.format(
+            site_name, path.remote_file()
         ))
     get(path.remote_file(), path.local_file())
-    print(green("restore to test database"))
-    if _local_database_exists(path.test_database_name()):
-        local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(path.test_database_name()))
-    local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(path.test_database_name()))
-    if not _local_postgres_user_exists(site_name):
-        local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(site_name, site_name))
-    local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
-        path.test_database_name(), path.local_file()), capture=True
-    )
-    local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
-        path.test_database_name(), site_name, path.user_name()
-    ))
-    print(green("psql {}").format(path.test_database_name()))
+    if site_info.is_mysql():
+        pass
+    else:
+        print(green("restore to test database"))
+        if _local_database_exists(path.test_database_name()):
+            local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(path.test_database_name()))
+        local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(path.test_database_name()))
+        if not _local_postgres_user_exists(site_name):
+            local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(site_name, site_name))
+        local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
+            path.test_database_name(), path.local_file()), capture=True
+        )
+        local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
+            path.test_database_name(), site_name, path.user_name()
+        ))
+        print(green("psql {}").format(path.test_database_name()))
 
 
 @task
