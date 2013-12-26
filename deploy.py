@@ -22,14 +22,14 @@ env.use_ssh_config = True
 SECRET_KEY = 'SECRET_KEY'
 
 
-def download_package(prefix, name, version, temp_folder):
-    package_name = '{}-{}=={}'.format(prefix, safe_name(name), version)
+def download_package(site_name, prefix, version, temp_folder):
+    package_name = '{}-{}=={}'.format(prefix, safe_name(site_name), version)
     print(green("download package: {}".format(package_name)))
     run('pip install --download={} --no-deps {}'.format(temp_folder, package_name))
 
 
-def extract_project_package(install_folder, temp_folder, prefix, name, version):
-    package_archive = '{}-{}-{}.tar.gz'.format(prefix, safe_name(name), version)
+def extract_project_package(install_folder, temp_folder, site_name, prefix, version):
+    package_archive = '{}-{}-{}.tar.gz'.format(prefix, safe_name(site_name), version)
     print(green("extract project package: {}".format(package_archive)))
     run('tar --strip-components=1 --directory={} -xzf {}'.format(
         install_folder,
@@ -67,61 +67,81 @@ def touch_vassal_ini(vassal_ini_file_name):
         )
 
 
-def run_post_deploy_test(name):
-    browser_driver = BrowserDriver(name)
+def run_post_deploy_test(site_name):
+    browser_driver = BrowserDriver(site_name)
     browser_driver.test()
     browser_driver.close()
 
 
-@task
-def deploy(prefix, name, version):
-    """ For docs, see https://github.com/pkimber/cloud_docs """
-    site_info = SiteInfo(prefix, name)
-    # folder names
-    folder_info = FolderInfo(name, version)
-    install_folder = folder_info.install()
-    temp_folder = folder_info.install_temp()
-    venv_folder = folder_info.install_venv()
-    # django command runner
-    command = DjangoCommand(install_folder, venv_folder, site_info)
-    # validate
-    if exists(install_folder):
-        raise Exception('Install folder {0} already exists'.format(install_folder))
-    print(green(install_folder))
-    # create folders
-    if not exists(folder_info.deploy()):
-        run('mkdir {0}'.format(folder_info.deploy()))
-    run('mkdir {0}'.format(install_folder))
-    run('mkdir {0}'.format(temp_folder))
+def deploy_django(folder_info, site_info, prefix, version):
+    command = DjangoCommand(
+        folder_info.install(), folder_info.install_venv(), site_info
+    )
     # download and extract main package
-    download_package(prefix, name, version, temp_folder)
-    extract_project_package(install_folder, temp_folder, prefix, name, version)
+    download_package(
+        site_info.site_name(),
+        prefix,
+        version,
+        folder_info.install_temp()
+    )
+    extract_project_package(
+        folder_info.install(),
+        folder_info.install_temp(),
+        site_info.site_name(),
+        prefix,
+        version
+    )
     # virtualenv
-    mkvirtualenv(venv_folder)
+    mkvirtualenv(folder_info.install_venv())
     # debug
-    run('ls -l {0}'.format(install_folder))
+    run('ls -l {0}'.format(folder_info.install()))
     # requirements
-    install_requirements(prefix, install_folder, venv_folder)
+    install_requirements(
+        prefix, folder_info.install(), folder_info.install_venv()
+    )
     # collect static
     command.collect_static()
-    # symbolic link
-    link_install_to_live_folder(install_folder, folder_info.live())
+    return command
+
+def django_post_deploy(command, folder_info):
     # migrate database and init project
     command.syncdb()
     command.migrate_database()
     command.init_project()
     # re-start uwsgi
     touch_vassal_ini(folder_info.vassal())
-    # Post deploy
-    run_post_deploy_test(name)
-
 
 @task
-def ok(name):
+def deploy(server_name, site_name, prefix, version):
+    """ For docs, see https://github.com/pkimber/cloud_docs """
+    site_info = SiteInfo(server_name, site_name)
+    folder_info = FolderInfo(site_name, version)
+    # validate
+    if exists(folder_info.install()):
+        raise Exception(
+            'Install folder {} already exists'.format(folder_info.install())
+        )
+    print(green(folder_info.install()))
+    # create folders
+    if not exists(folder_info.deploy()):
+        run('mkdir {0}'.format(folder_info.deploy()))
+    run('mkdir {}'.format(folder_info.install()))
+    run('mkdir {0}'.format(folder_info.install_temp()))
+    # return django command runner
+    command = deploy_django(folder_info, site_info, prefix, version)
+    # symbolic link
+    link_install_to_live_folder(folder_info.install(), folder_info.live())
+    # django
+    django_post_deploy(command, folder_info)
+    # Post deploy
+    run_post_deploy_test(site_name)
+
+@task
+def ok(site_name):
     """
     Test a live site (automatically done at the end of a deploy)
 
     e.g:
     fab -f deploy.py ok:name=csw_web
     """
-    run_post_deploy_test(name)
+    run_post_deploy_test(site_name)

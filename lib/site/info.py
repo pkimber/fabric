@@ -24,6 +24,7 @@ class InfoError(Exception):
 class SiteInfo(object):
 
     def __init__(self, server_name, site_name, pillar_folder=None, certificate_folder=None):
+        self._site_name = site_name
         # Some constants
         self.ALLOWED_HOSTS = 'allowed_hosts'
         self.DB_IP = 'db_ip'
@@ -53,9 +54,9 @@ class SiteInfo(object):
             pillar_folder = os.path.join(INFO_FOLDER, 'pillar')
         pillar_data = self._load_pillar(pillar_folder, server_name)
         self._verify_sites(pillar_data)
-        self.db_ip = self._get_db_ip(pillar_data)
-        self.media_root = self._get_media_root(site_name)
-        self.site_info = self._get_site_info(site_name, pillar_data)
+        self._db_ip = self._get_db_ip(pillar_data)
+        self._media_root = self._get_media_root()
+        self._site_info = self._get_site_info(pillar_data)
 
     def _get_db_ip(self, pillar_data):
         if self._is_postgres(pillar_data):
@@ -68,8 +69,8 @@ class SiteInfo(object):
         else:
             return 'no ip for non-postgres database'
 
-    def _get_media_root(self, site_name):
-        return '/home/web/repo/project/{}/files/'.format(site_name)
+    def _get_media_root(self):
+        return '/home/web/repo/project/{}/files/'.format(self._site_name)
 
     def _get_pillar_data(self, pillar_data, key):
         result = pillar_data.get(key, None)
@@ -79,26 +80,26 @@ class SiteInfo(object):
             )
         return result
 
-    def _get_site_info(self, site_name, pillar_data):
+    def _get_site_info(self, pillar_data):
         sites = self._get_pillar_data(pillar_data, self.SITES)
-        if site_name not in sites:
+        if self._site_name not in sites:
             raise InfoError(
                 "site '{}' not found in folder: {}".format(
-                    site_name, sites.keys()
+                    self._site_name, sites.keys()
                 )
             )
-        return sites[site_name]
+        return sites[self._site_name]
 
     def _get_setting(self, key):
-        if key not in self.site_info:
+        if key not in self._site_info:
             raise InfoError("No '{}' setting for site".format(key))
-        return self.site_info[key]
+        return self._site_info[key]
 
     def _is_postgres(self, pillar_data):
         """do any of the sites use postgres"""
         result = False
         sites = self._get_pillar_data(pillar_data, self.SITES)
-        for site_name, settings in sites.items():
+        for name, settings in sites.items():
             database_type = settings[self.DB_TYPE]
             if database_type == self.PSQL:
                 result = True
@@ -185,7 +186,7 @@ class SiteInfo(object):
                 "{}: server key not found '{}'".format(domain, server_key)
             )
 
-    def _verify_lan_not_ssl(self, site_name, settings):
+    def _verify_lan_not_ssl(self, settings):
         """
         If installing to a LAN, then cannot use SSL.
 
@@ -195,7 +196,7 @@ class SiteInfo(object):
         if settings.get(self.SSL):
             raise InfoError(
                 "site '{}' is set to run on a LAN, "
-                "so cant use SSL".format(site_name)
+                "so can't use SSL".format(self._site_name)
             )
 
     def _verify_no_duplicate_uwsgi_ports(self, sites):
@@ -244,33 +245,33 @@ class SiteInfo(object):
 
     def _verify_sites(self, pillar_data):
         sites = self._get_pillar_data(pillar_data, self.SITES)
-        for site_name, settings in sites.items():
+        for name, settings in sites.items():
             if self.DB_PASS not in settings:
                 raise InfoError(
                     "site '{}' does not have a database "
-                    "password".format(site_name)
+                    "password".format(name)
                 )
             if self.DB_TYPE not in settings:
                 raise InfoError(
                     "site '{}' does not have a database "
-                    "type".format(site_name)
+                    "type".format(name)
                 )
             if not settings[self.DB_TYPE] in ('mysql', self.PSQL):
                 raise InfoError(
                     "site '{}' has an unknown database "
-                    "type: {}".format(site_name, settings[self.DB_TYPE])
+                    "type: {}".format(name, settings[self.DB_TYPE])
                 )
             if self.DOMAIN not in settings:
                 raise InfoError(
-                    "site '{}' does not have a domain name".format(site_name)
+                    "site '{}' does not have a domain name".format(name)
                 )
             if self.SSL not in settings:
                 raise InfoError(
                     "site '{}' does not have SSL 'True' or "
-                    "'False'".format(site_name)
+                    "'False'".format(name)
                 )
             if settings.get(self.LAN):
-                self._verify_lan_not_ssl(site_name, settings)
+                self._verify_lan_not_ssl(name, settings)
             if settings.get(self.SSL):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
         if self._is_postgres(pillar_data):
@@ -293,13 +294,13 @@ class SiteInfo(object):
         """
         return {
             self.ALLOWED_HOSTS.upper(): self.domain(),
-            self.DB_IP.upper(): self.db_ip,
+            self.DB_IP.upper(): self._db_ip,
             self.DB_PASS.upper(): self.password(),
             self.DOMAIN.upper(): self.domain(),
             self.MAILGUN_ACCESS_KEY.upper(): 'abc',
             self.SSL.upper(): str(self.ssl()),
             self.MAILGUN_SERVER_NAME.upper(): 'def',
-            self.MEDIA_ROOT.upper(): self.media_root,
+            self.MEDIA_ROOT.upper(): self._media_root,
             self.SECRET_KEY.upper(): 'jkl',
             self.SENDFILE_ROOT.upper(): 'mno',
         }
@@ -312,6 +313,9 @@ class SiteInfo(object):
 
     def password(self):
         return self._get_setting(self.DB_PASS)
+
+    def site_name(self):
+        return self._site_name
 
     def ssl_cert(self):
         return self._ssl_cert(self.domain())
