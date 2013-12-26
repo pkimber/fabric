@@ -38,6 +38,7 @@ class SiteInfo(object):
         self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
         self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
         self.MEDIA_ROOT = 'media_root'
+        self.MYSQL = 'mysql'
         self.MYSQL_SERVER = 'mysql_server'
         self.PHP = 'php'
         self.POSTGRES_SERVER = 'postgres_server'
@@ -284,7 +285,7 @@ class SiteInfo(object):
                     "site '{}' does not have a database "
                     "type".format(name)
                 )
-            if settings[self.DB_TYPE] == 'mysql':
+            if settings[self.DB_TYPE] == self.MYSQL:
                 has_mysql = True
             elif settings[self.DB_TYPE] == self.PSQL:
                 has_postgres = True
@@ -381,8 +382,14 @@ class SiteInfo(object):
     def is_django(self):
         return self._get_setting(self.PROFILE) == self.DJANGO
 
+    def is_mysql(self):
+        return self._get_setting(self.DB_TYPE) == self.MYSQL
+
     def is_php(self):
         return self._get_setting(self.PROFILE) == self.PHP
+
+    def is_postgres(self):
+        return self._get_setting(self.DB_TYPE) == self.PSQL
 
     def backup(self):
         return self._get_setting('backup')

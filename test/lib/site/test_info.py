@@ -163,6 +163,15 @@ class TestSiteInfo(unittest.TestCase):
         )
         self.assertEquals(True, site_info.is_django())
 
+    def test_is_postgres(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'csw_web',
+            self._get_test_data_folder('data'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertEquals(True, site_info.is_postgres())
+
     def test_ssl(self):
         site_info = SiteInfo(
             'drop-temp',
