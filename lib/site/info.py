@@ -57,9 +57,9 @@ class SiteInfo(object):
         if not pillar_folder:
             pillar_folder = os.path.join(INFO_FOLDER, 'pillar')
         pillar_data = self._load_pillar(pillar_folder, server_name)
+        self._verify_profile(pillar_data)
         self._verify_sites(pillar_data)
         self._verify_database_settings(pillar_data)
-        self._verify_profile(pillar_data)
         self._db_ip = self._get_db_ip(pillar_data)
         self._media_root = self._get_media_root()
         self._site_info = self._get_site_info(pillar_data)
