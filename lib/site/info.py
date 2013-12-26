@@ -384,17 +384,20 @@ class SiteInfo(object):
     def is_php(self):
         return self._get_setting(self.PROFILE) == self.PHP
 
+    def backup(self):
+        return self._get_setting('backup')
+
     def packages(self):
         return self._get_setting('packages')
-
-    def ssl(self):
-        return self._get_setting(self.SSL)
 
     def password(self):
         return self._get_setting(self.DB_PASS)
 
     def site_name(self):
         return self._site_name
+
+    def ssl(self):
+        return self._get_setting(self.SSL)
 
     def ssl_cert(self):
         return self._ssl_cert(self.domain())
