@@ -38,7 +38,9 @@ class SiteInfo(object):
         self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
         self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
         self.MEDIA_ROOT = 'media_root'
+        self.MYSQL_SERVER = 'mysql_server'
         self.PHP = 'php'
+        self.POSTGRES_SERVER = 'postgres_server'
         self.POSTGRES_SETTINGS = 'postgres_settings'
         self.PROFILE = 'profile'
         self.PSQL = 'psql'
@@ -291,8 +293,17 @@ class SiteInfo(object):
                     "site '{}' has an unknown database "
                     "type: {}".format(name, settings[self.DB_TYPE])
                 )
+        if has_mysql:
+            self._verify_database_settings_mysql(pillar_data)
         if has_postgres:
             self._verify_database_settings_postgres(pillar_data)
+
+    def _verify_database_settings_mysql(self, pillar_data):
+        if not pillar_data.get(self.MYSQL_SERVER, None):
+            raise InfoError(
+                "Cannot find '{}' config in the "
+                "pillar.".format(self.MYSQL_SERVER)
+            )
 
     def _verify_database_settings_postgres(self, pillar_data):
         settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
@@ -311,6 +322,11 @@ class SiteInfo(object):
                     "'postgres_settings', 'listen_address' "
                     "is an invalid IP address '{}'".format(listen_address)
                 )
+        if not pillar_data.get(self.POSTGRES_SERVER, None):
+            raise InfoError(
+                "Cannot find '{}' config in the "
+                "pillar.".format(self.POSTGRES_SERVER)
+            )
 
     def _verify_sites(self, pillar_data):
         sites = self._get_pillar_data(pillar_data, self.SITES)
