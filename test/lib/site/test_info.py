@@ -163,15 +163,6 @@ class TestSiteInfo(unittest.TestCase):
         )
         self.assertEquals(True, site_info.is_django())
 
-    def test_is_php(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'hatherleigh_info',
-            self._get_test_data_folder('data_php'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertEquals(True, site_info.is_php())
-
     def test_ssl(self):
         site_info = SiteInfo(
             'drop-temp',

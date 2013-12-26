@@ -316,6 +316,9 @@ class SiteInfo(object):
             return True
         return False
 
+    def packages(self):
+        return self._get_setting('packages')
+
     def ssl(self):
         return self._get_setting(self.SSL)
 

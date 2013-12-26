@@ -3,13 +3,18 @@ import os
 
 from pkg_resources import safe_name
 
-from fabric.api import abort
-from fabric.api import env
-from fabric.api import run
-from fabric.api import task
-from fabric.colors import green
-from fabric.colors import yellow
+from fabric.api import (
+    abort,
+    env,
+    run,
+    task,
+)
+from fabric.colors import (
+    green,
+    yellow,
+)
 from fabric.contrib.files import exists
+from fabric.contrib.project import rsync_project
 
 from lib.browser.drive import BrowserDriver
 from lib.manage.command import DjangoCommand
@@ -112,7 +117,6 @@ def django_post_deploy(command, folder_info):
 
 
 def deploy_php(folder_info, site_info):
-    from fabric.contrib.project import rsync_project
     rsync_project(
         local_dir='/home/patrick/repo/wip/ilspa/deploy',
         remote_dir=folder_info.upload(),

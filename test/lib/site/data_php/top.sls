@@ -1,4 +1,4 @@
 base:
   'drop-*':
     - db.settings
-    - sites.four
+    - sites.test
