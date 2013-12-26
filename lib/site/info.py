@@ -219,7 +219,7 @@ class SiteInfo(object):
     def _verify_no_duplicate_uwsgi_ports(self, sites):
         ports = {}
         for site, settings in sites.items():
-            is_php = settings.get(self.PHP, None)
+            is_php = settings.get(self.PROFILE) == self.PHP
             if not is_php:
                 if self.UWSGI_PORT not in settings:
                     raise InfoError(
@@ -293,8 +293,8 @@ class SiteInfo(object):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
         if self._is_postgres(pillar_data):
             self._verify_postgres_settings(pillar_data)
-        self._verify_no_duplicate_uwsgi_ports(sites)
         self._verify_profile(sites)
+        self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):
         """
@@ -327,12 +327,10 @@ class SiteInfo(object):
         return self._get_setting(self.DOMAIN)
 
     def is_django(self):
-        return not self.is_php()
+        return self._get_setting(self.PROFILE) == self.DJANGO
 
     def is_php(self):
-        if self.PHP in self._site_info:
-            return True
-        return False
+        return self._get_setting(self.PROFILE) == self.PHP
 
     def packages(self):
         return self._get_setting('packages')
