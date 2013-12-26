@@ -8,7 +8,7 @@ from fabric.api import env
 from fabric.api import run
 from fabric.api import task
 from fabric.colors import green
-#from fabric.colors import yellow
+from fabric.colors import yellow
 from fabric.contrib.files import exists
 
 from lib.browser.drive import BrowserDriver
@@ -111,6 +111,13 @@ def django_post_deploy(command, folder_info):
     touch_vassal_ini(folder_info.vassal())
 
 
+def deploy_php(folder_info, site_info):
+    from fabric.contrib.project import rsync_project
+    rsync_project(
+        local_dir='/home/patrick/repo/wip/ilspa/deploy',
+        remote_dir=folder_info.upload(),
+    )
+
 @task
 def deploy(server_name, site_name, prefix, version):
     """ For docs, see https://github.com/pkimber/cloud_docs """
@@ -124,17 +131,20 @@ def deploy(server_name, site_name, prefix, version):
     print(green(folder_info.install()))
     # create folders
     if not exists(folder_info.deploy()):
-        run('mkdir {0}'.format(folder_info.deploy()))
+        run('mkdir {}'.format(folder_info.deploy()))
     run('mkdir {}'.format(folder_info.install()))
-    run('mkdir {0}'.format(folder_info.install_temp()))
-    if site_info.is_django():
+    run('mkdir {}'.format(folder_info.install_temp()))
+    if site_info.is_php():
+        deploy_php(folder_info, site_info)
+    else:
         deploy_django(folder_info, site_info, prefix, version)
     # symbolic link
     link_install_to_live_folder(folder_info.install(), folder_info.live())
     if site_info.is_django():
         django_post_deploy(command, folder_info)
     # Post deploy
-    run_post_deploy_test(site_name)
+    # TODO add this back in!!
+    # run_post_deploy_test(site_name)
 
 @task
 def ok(site_name):

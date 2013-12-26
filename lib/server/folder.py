@@ -85,6 +85,10 @@ class FolderInfo(object):
     def srv_folder(self):
         return os.path.join('/', 'srv')
 
+    def upload(self):
+        """upload archive using rsync (drupal etc)"""
+        return os.path.join(self._repo(), 'upload')
+
     def vassal(self):
         return os.path.join(
             self._repo(),
