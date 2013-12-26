@@ -106,7 +106,7 @@ class SiteInfo(object):
                 break
         return result
 
-    def is_valid_ip(self, ip):
+    def _is_valid_ip(self, ip):
         try:
             IP(str(ip))
             return True
@@ -235,7 +235,7 @@ class SiteInfo(object):
         if listen_address == self.LOCALHOST:
             pass
         else:
-            if self.is_valid_ip(listen_address):
+            if self._is_valid_ip(listen_address):
                 pass
             else:
                 raise InfoError(
@@ -271,7 +271,7 @@ class SiteInfo(object):
                     "'False'".format(name)
                 )
             if settings.get(self.LAN):
-                self._verify_lan_not_ssl(name, settings)
+                self._verify_lan_not_ssl(settings)
             if settings.get(self.SSL):
                 self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
         if self._is_postgres(pillar_data):
@@ -307,6 +307,14 @@ class SiteInfo(object):
 
     def domain(self):
         return self._get_setting(self.DOMAIN)
+
+    def is_django(self):
+        return not self.is_php()
+
+    def is_php(self):
+        if self.PHP in self._site_info:
+            return True
+        return False
 
     def ssl(self):
         return self._get_setting(self.SSL)

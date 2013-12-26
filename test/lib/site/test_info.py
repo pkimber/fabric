@@ -154,6 +154,24 @@ class TestSiteInfo(unittest.TestCase):
         }
         self.assertDictEqual(expected, site_info.env())
 
+    def test_is_django(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'csw_web',
+            self._get_test_data_folder('data'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertEquals(True, site_info.is_django())
+
+    def test_is_php(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'hatherleigh_info',
+            self._get_test_data_folder('data_php'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertEquals(True, site_info.is_php())
+
     def test_ssl(self):
         site_info = SiteInfo(
             'drop-temp',
@@ -282,7 +300,7 @@ class TestSiteInfo(unittest.TestCase):
                 self._get_test_data_folder('data_lan_and_ssl'),
                 self._get_test_cert_folder('cert')
             )
-        self.assertIn('LAN, so cant use SSL', cm.exception.value)
+        self.assertIn("LAN, so can't use SSL", cm.exception.value)
 
     def test_no_duplicate_uwsgi_ports(self):
         with self.assertRaises(InfoError) as cm:
