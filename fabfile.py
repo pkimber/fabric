@@ -1,3 +1,5 @@
+import os
+
 from fabric.api import (
     abort,
     cd,
@@ -84,6 +86,36 @@ def backup_files():
     with cd(path.files_folder()):
         run('tar -cvzf {} .'.format(path.remote_file()))
     get(path.remote_file(), path.local_file())
+
+
+@task
+def backup_php_site(site_name):
+    """
+    fab -H legalsec@legalsecretaryjournal.com backup_php_site:site_name=legalsecretaryjournal_com
+    """
+    print(green("Backup files on '{}'").format(env.host_string))
+    name = env.host_string.replace('.', '_')
+    name = name.replace('-', '_')
+    path = Path(name, 'files')
+    print(yellow(path.remote_folder()))
+    run('mkdir -p {0}'.format(path.remote_folder()))
+    # remove '.gz' from end of tar file
+    tar_file = os.path.splitext(path.remote_file())[0]
+    with cd('/home/legalsec/legalsecretaryjournal.com/'):
+        first = True
+        for folder in path.php_folders():
+            if first:
+                first = False
+                run('tar cvf {} {}'.format(tar_file, folder))
+            else:
+                run('tar rvf {} {}'.format(tar_file, folder))
+    run('gzip {}'.format(tar_file))
+    # list the contents of the archive
+    run('tar ztvf {}'.format(path.remote_file()))
+
+    #with cd(path.files_folder()):
+    #    run('tar -cvzf {} .'.format(path.remote_file()))
+    #get(path.remote_file(), path.local_file())
 
 
 @task

@@ -82,6 +82,15 @@ class Path(object):
     def local_file(self):
         return os.path.expanduser(self.remote_file())
 
+    def php_folders(self):
+        return [
+            'images',
+            'sites/all/libraries',
+            'sites/all/modules',
+            'sites/all/themes',
+            'sites/default/files',
+        ]
+
     def remote_file(self):
         return os.path.join(
             self.remote_folder(),
