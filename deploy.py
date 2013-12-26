@@ -5,6 +5,7 @@ from pkg_resources import safe_name
 
 from fabric.api import (
     abort,
+    cd,
     env,
     run,
     task,
@@ -118,9 +119,22 @@ def django_post_deploy(command, folder_info):
 
 def deploy_php(folder_info, site_info):
     rsync_project(
-        local_dir='/home/patrick/repo/wip/ilspa/deploy',
+        local_dir='/home/patrick/repo/wip/ilspa/deploy/',
         remote_dir=folder_info.upload(),
     )
+    packages = site_info.packages()
+    for package in packages:
+        name = package['name']
+        archive = package['archive']
+        tar_opt = package.get('tar', '')
+        with cd(folder_info.install()):
+            print(yellow(name))
+            print(yellow('  {}'.format(archive)))
+            print(yellow('  {}'.format(tar_opt)))
+            run('tar {} -xzf {}'.format(
+                tar_opt,
+                os.path.join(folder_info.upload(), archive),
+            ))
 
 @task
 def deploy(server_name, site_name, prefix, version):
