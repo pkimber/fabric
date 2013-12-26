@@ -183,17 +183,17 @@ class SiteInfo(object):
             if not is_django:
                 raise InfoError(
                     "cannot find '{}' config key in the pillar "
-                    "data.".format(self.DJANGO)
+                    "data.  The 'config' file is a global variable used by "
+                    "salt when setting up server state".format(self.DJANGO)
                 )
         if has_php:
             is_php = pillar_data.get(self.PHP, None)
             if not is_php:
                 raise InfoError(
                     "cannot find '{}' config key in the pillar "
-                    "data.".format(self.PHP)
+                    "data.  The 'config' file is a global variable used by "
+                    "salt when setting up server state".format(self.PHP)
                 )
-        #is_django = self._get_pillar_data(pillar_data, self.DJANGO)
-        #is_php = self._get_pillar_data(pillar_data, self.PHP)
 
     def _verify_has_ssl_certificate(self, domain):
         if not os.path.exists(self.certificate_folder):
