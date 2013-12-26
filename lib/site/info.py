@@ -28,11 +28,13 @@ class SiteInfo(object):
         self.ALLOWED_HOSTS = 'allowed_hosts'
         self.DB_IP = 'db_ip'
         self.DB_PASS = 'db_pass'
+        self.DB_TYPE = 'db_type'
         self.DOMAIN = 'domain'
         self.LAN = 'lan'
         self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
         self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
         self.MEDIA_ROOT = 'media_root'
+        self.PHP = 'php'
         self.SECRET_KEY = 'secret_key'
         self.SENDFILE_ROOT = 'sendfile_root'
         self.SSL = 'ssl'
@@ -233,18 +235,20 @@ class SiteInfo(object):
     def _verify_no_duplicate_uwsgi_ports(self, sites):
         ports = {}
         for site, settings in sites.items():
-            if self.UWSGI_PORT not in settings:
-                raise InfoError(
-                    "site '{}' does not have a uWSGI port".format(site)
-                )
-            number = settings[self.UWSGI_PORT]
-            if number in ports:
-                raise InfoError(
-                    "site '{}' has the same uWSGI port number "
-                    "as '{}'".format(site, ports[number])
-                )
-            else:
-                ports[number] = site
+            is_php = settings.get(self.PHP, None)
+            if not is_php:
+                if self.UWSGI_PORT not in settings:
+                    raise InfoError(
+                        "site '{}' does not have a uWSGI port".format(site)
+                    )
+                number = settings[self.UWSGI_PORT]
+                if number in ports:
+                    raise InfoError(
+                        "site '{}' has the same uWSGI port number "
+                        "as '{}'".format(site, ports[number])
+                    )
+                else:
+                    ports[number] = site
 
     def _verify_no_duplicate_site(self, results, file_results):
         for site, settings in file_results.items():
@@ -261,6 +265,11 @@ class SiteInfo(object):
                 raise InfoError(
                     "site '{}' does not have a database "
                     "password".format(site_name)
+                )
+            if self.DB_TYPE not in settings:
+                raise InfoError(
+                    "site '{}' does not have a database "
+                    "type".format(site_name)
                 )
             if self.DOMAIN not in settings:
                 raise InfoError(
