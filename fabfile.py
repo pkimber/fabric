@@ -148,6 +148,14 @@ def create_db(server_name, site_name, table_space=None):
     print(green("create '{}' database on '{}'").format(site_name, env.host_string))
     site_info = SiteInfo(server_name, site_name)
     if site_info.is_mysql():
+        # TODO
+        # Note: these commands will not work if the root user has a password!
+        # For more information, see:
+        # Securing the Initial MySQL Accounts:
+        # http://docs.oracle.com/cd/E17952_01/refman-5.1-en/default-privileges.html
+        # Setting mysql root password the first time:
+        # https://github.com/saltstack/salt/issues/5918
+        # I have a task on my list to set the password automatically
         run('mysql -u root -e "CREATE USER \'{}\'@\'localhost\' IDENTIFIED BY \'{}\';"'.format(
             site_info.db_user(), site_info.password()
             )
