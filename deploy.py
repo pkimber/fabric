@@ -119,16 +119,24 @@ def django_post_deploy(command, folder_info):
 
 def deploy_php(folder_info, site_info):
     rsync_project(
-        local_dir='/home/patrick/repo/wip/ilspa/deploy/',
+        local_dir='../deploy/upload/',
         remote_dir=folder_info.upload(),
     )
     packages = site_info.packages()
     for package in packages:
         name = package['name']
         archive = package['archive']
+        folder = package.get('folder', None)
         tar_opt = package.get('tar', '')
-        with cd(folder_info.install()):
-            print(yellow(name))
+        print(yellow(name))
+        if folder:
+            install = os.path.join(folder_info.install(), folder)
+            if not exists(install):
+                print(yellow('  {}'.format(install)))
+                run('mkdir -p {}'.format(install))
+        else:
+            install = folder_info.install()
+        with cd(install):
             print(yellow('  {}'.format(archive)))
             print(yellow('  {}'.format(tar_opt)))
             run('tar {} -xzf {}'.format(
