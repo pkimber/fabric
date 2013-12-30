@@ -43,3 +43,20 @@ class TestSiteInfoPhp(unittest.TestCase):
             'archive': 'date-6.x-2.9.tar.gz',
         }
         self.assertDictEqual(expected, packages[1])
+
+    def test_mysql_db_username(self):
+        self.assertEquals('hatherleigh_info', self.site_info.db_user())
+
+    def test_mysql_db_username_too_long(self):
+        site_info = SiteInfo(
+            'drop-user',
+            'very_long_site_name',
+            self._get_test_data_folder('data_php'),
+            self._get_test_cert_folder('cert')
+        )
+        with self.assertRaises(InfoError) as cm:
+            site_info.db_user()
+        self.assertIn(
+            'maximum length of user name for mysql',
+            cm.exception.value
+        )

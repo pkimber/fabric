@@ -30,6 +30,7 @@ class SiteInfo(object):
         self.DB_IP = 'db_ip'
         self.DB_PASS = 'db_pass'
         self.DB_TYPE = 'db_type'
+        self.DB_USER = 'db_user'
         self.DJANGO = 'django'
         self.DOMAIN = 'domain'
         self.LAN = 'lan'
@@ -375,6 +376,23 @@ class SiteInfo(object):
             self.SECRET_KEY.upper(): 'jkl',
             self.SENDFILE_ROOT.upper(): 'mno',
         }
+
+    def db_user(self):
+        """MySQL has a maximum length for a user name of 16 characters.
+
+        If you need to set a shorter user name, use the pillar 'db_user'
+        setting.
+
+        """
+        result = self._site_info.get(self.DB_USER)
+        if not result:
+            result = self._site_name
+        if self.is_mysql() and len(result) > 16:
+            raise InfoError(
+                "maximum length of user name for mysql is 16 characters:"
+                "{}".format(result)
+            )
+        return result
 
     def domain(self):
         return self._get_setting(self.DOMAIN)

@@ -129,10 +129,12 @@ def backup_php_site(server_name, site_name):
 
 
 @task
-def create_db(prefix, site_name, table_space):
+def create_db(server_name, site_name, table_space=None):
     """
-    Note: table space 'cbs' is the name we have given to the Rackspace Cloud Block Storage volume.
-    If you are not using cloud block storage, then leave the ``table_space`` parameter empty.
+    Note: table space 'cbs' is the name we have given to the Rackspace Cloud
+    Block Storage volume.
+    If you are not using cloud block storage, then don't use the
+    ``table_space`` parameter.
 
     e.g.
     fab -H drop-temp create_db:prefix=pkimber,site_name=hatherleigh_net,table_space=
@@ -144,18 +146,35 @@ def create_db(prefix, site_name, table_space):
     -X  Do not read the start-up file
     """
     print(green("create '{}' database on '{}'").format(site_name, env.host_string))
-    site_info = SiteInfo(prefix, site_name)
-    #run('psql -X -U postgres -c "DROP DATABASE {};"'.format(site_name))
-    run('psql -X -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
-        site_name, site_info.password()
-        ))
-    parameter = ''
-    if table_space:
-        print(yellow("using block storage, table space {}...".format(table_space)))
-        parameter = 'TABLESPACE={}'.format(table_space)
-    run('psql -X -U postgres -c "CREATE DATABASE {} WITH OWNER={} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
-        site_name, site_name, parameter,
-        ))
+    site_info = SiteInfo(server_name, site_name)
+    if site_info.is_mysql():
+        run('mysql -u root -e "CREATE USER \'{}\'@\'localhost\' IDENTIFIED BY \'{}\';"'.format(
+            site_info.db_user(), site_info.password()
+            )
+        )
+        run('mysql -u root -e "CREATE DATABASE {};"'.format(site_name))
+        # I had loads of problems with this one.  bash evaluates back-ticks
+        # first.  I think I solved the issue by adding 'shell=False' to 'run'.
+        command = (
+            "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, "
+            "ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON \`{}\`.* TO "
+            "'{}'@'localhost' IDENTIFIED BY '{}';".format(
+                site_name, site_info.db_user(), site_info.password()
+            )
+        )
+        run('mysql -u root -e "{}"'.format(command), shell=False)
+    else:
+        #run('psql -X -U postgres -c "DROP DATABASE {};"'.format(site_name))
+        run('psql -X -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
+            site_name, site_info.password()
+            ))
+        parameter = ''
+        if table_space:
+            print(yellow("using block storage, table space {}...".format(table_space)))
+            parameter = 'TABLESPACE={}'.format(table_space)
+        run('psql -X -U postgres -c "CREATE DATABASE {} WITH OWNER={} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
+            site_name, site_name, parameter,
+            ))
     print(green('done'))
 
 
