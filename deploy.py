@@ -112,7 +112,7 @@ def deploy_django(folder_info, site_info, prefix, version):
     command.init_project()
 
 
-def django_post_deploy(command, folder_info):
+def django_post_deploy(folder_info):
     # re-start uwsgi
     touch_vassal_ini(folder_info.vassal())
 
@@ -167,7 +167,7 @@ def deploy(server_name, site_name, prefix, version):
     # symbolic link
     link_install_to_live_folder(folder_info.install(), folder_info.live())
     if site_info.is_django():
-        django_post_deploy(command, folder_info)
+        django_post_deploy(folder_info)
     # Post deploy
     # TODO add this back in!!
     # run_post_deploy_test(site_name)
