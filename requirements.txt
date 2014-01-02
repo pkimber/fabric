@@ -7,5 +7,5 @@ IPy==0.81
 psycopg2==2.5.1
 pytest==2.4.1
 pyyaml==3.10
-selenium==2.35.0
+selenium==2.39.0
 walkdir==0.3

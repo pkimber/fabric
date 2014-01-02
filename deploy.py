@@ -169,8 +169,7 @@ def deploy(server_name, site_name, prefix, version):
     if site_info.is_django():
         django_post_deploy(folder_info)
     # Post deploy
-    # TODO add this back in!!
-    # run_post_deploy_test(site_name)
+    run_post_deploy_test(site_name)
 
 @task
 def ok(site_name):
