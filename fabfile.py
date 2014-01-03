@@ -259,11 +259,9 @@ def solr_status():
 
 
 @task
-def ssl_cert(prefix, site_name):
-    """
-    fab -H server ssl_cert:prefix=pkimber,site_name=hatherleigh_net
-    """
-    site_info = SiteInfo(prefix, site_name)
+def ssl_cert(server_name, site_name):
+    """ For docs, see https://github.com/pkimber/docs."""
+    site_info = SiteInfo(server_name, site_name)
     if not site_info.ssl():
         abort("'{}' is not set-up for SSL in the Salt pillar".format(site_name))
     folder_info = FolderInfo(site_name)
