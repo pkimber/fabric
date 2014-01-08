@@ -1,5 +1,5 @@
 base:
-  'drop-*':
+  'drop-temp':
     - config.django
     - sites.fourteen
 

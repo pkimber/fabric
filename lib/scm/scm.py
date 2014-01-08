@@ -4,16 +4,6 @@ from git.exc import InvalidGitRepositoryError
 import hgapi
 
 
-class ScmError(Exception):
-
-    def __init__(self, value):
-        Exception.__init__(self)
-        self.value = value
-
-    def __str__(self):
-        return repr('%s, %s' % (self.__class__.__name__, self.value))
-
-
 class Scm(object):
 
     def __init__(self, folder):
@@ -21,7 +11,7 @@ class Scm(object):
         self._is_hg = self.is_mercurial()
         if not self._is_hg:
             if not self.is_git():
-                raise ScmError("Must be a Mercurial or GIT repository: {}".format(self.folder))
+                raise TaskError("Must be a Mercurial or GIT repository: {}".format(self.folder))
 
     def _get_hg_repo(self):
         return hgapi.Repo(self.folder)
@@ -44,7 +34,7 @@ class Scm(object):
             result = True
         except hgapi.HgException as ev:
             if not 'no repository found' in ev.message:
-                raise ScmError(
+                raise TaskError(
                     "Unexpected exception thrown by 'hg_status': {}".format(
                         ev.message
                     )
@@ -63,7 +53,7 @@ class Scm(object):
             if 'bitbucket' in path:
                 result = path, author, email
             else:
-                raise ScmError('Cannot find bitbucket path to repository: {0}'.format(path))
+                raise TaskError('Cannot find bitbucket path to repository: {0}'.format(path))
         else:
             repo = self._get_git_repo()
             if len(repo.remotes) == 1:
@@ -73,7 +63,7 @@ class Scm(object):
                 email = repo.config_reader(config_level="global").get("user", "email")
                 result = path, name, email
             else:
-                raise ScmError("GIT repo has more than one remote.  Don't know what to do!")
+                raise TaskError("GIT repo has more than one remote.  Don't know what to do!")
         return result
 
     def get_status(self):
@@ -90,7 +80,7 @@ class Scm(object):
                 name = line.strip()
                 pos = name.find(' ')
                 if pos == -1:
-                    raise ScmError("GIT status filename does not contain a space: {}".format(line))
+                    raise TaskError("GIT status filename does not contain a space: {}".format(line))
                 result.append(name[pos + 1:])
         return result
 
@@ -99,7 +89,7 @@ class Scm(object):
         for name in status:
             pos = name.find(' ')
             if pos > -1:
-                raise ScmError(
+                raise TaskError(
                     "Version control 'status' - filename contains a space: {}".format(name)
                 )
         if(len(self.get_status())):

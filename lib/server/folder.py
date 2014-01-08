@@ -3,18 +3,9 @@ import os
 
 from datetime import datetime
 
+from lib.error import TaskError
 from lib.site.info import SSL_CERT_NAME
 from lib.site.info import SSL_SERVER_KEY
-
-
-class FolderInfoError(Exception):
-
-    def __init__(self, value):
-        Exception.__init__(self)
-        self.value = value
-
-    def __str__(self):
-        return repr('%s, %s' % (self.__class__.__name__, self.value))
 
 
 class FolderInfo(object):
@@ -45,7 +36,7 @@ class FolderInfo(object):
 
     def install(self):
         if not self.date_folder:
-            raise FolderInfoError(
+            raise TaskError(
                 "Cannot return an install folder if the class wasn't "
                 "constructed with a version number e.g. '0.2.32'"
             )

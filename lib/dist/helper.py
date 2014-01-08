@@ -109,7 +109,6 @@ def get_scm_config():
 
 
 def get_name():
-    print(yellow("get name..."))
     check_setup_yaml_exists()
     with open(FILENAME_SETUP_YAML) as f:
         data = yaml.load(f)

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from lib.site.info import InfoError
+from lib.error import TaskError
 from lib.site.info import SiteInfo
 
 
@@ -25,17 +25,17 @@ class TestSiteInfo(unittest.TestCase):
         self.assertIn('westcountrycoders.co.uk', site_info.domain())
 
     def test_database_domain_missing(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
-                'na',
+                'csw_web',
                 self._get_test_data_folder('data_missing_domain'),
                 self._get_test_cert_folder('cert')
             )
         self.assertIn('does not have a domain', cm.exception.value)
 
     def test_database_missing_ip(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -48,10 +48,10 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_database_missing_ip_file(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
-                'na',
+                'csw_web',
                 self._get_test_data_folder('data_missing_db_ip_file'),
                 self._get_test_cert_folder('cert')
             )
@@ -61,7 +61,7 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_database_ip_invalid(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -83,17 +83,17 @@ class TestSiteInfo(unittest.TestCase):
         self.assertIn('myPassword', site_info.password())
 
     def test_database_password_missing(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
-                'na',
+                'csw_web',
                 self._get_test_data_folder('data_missing_pass'),
                 self._get_test_cert_folder('cert')
             )
         self.assertIn('does not have a database password', cm.exception.value)
 
     def test_database_type_invalid(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -103,7 +103,7 @@ class TestSiteInfo(unittest.TestCase):
         self.assertIn('unknown database type', cm.exception.value)
 
     def test_database_type_missing(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -154,6 +154,15 @@ class TestSiteInfo(unittest.TestCase):
         }
         self.assertDictEqual(expected, site_info.env())
 
+    def test_find_server_name(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'csw_web',
+            self._get_test_data_folder('data'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertEquals('drop-temp', site_info.server_name())
+
     def test_is_django(self):
         site_info = SiteInfo(
             'drop-temp',
@@ -171,6 +180,16 @@ class TestSiteInfo(unittest.TestCase):
             self._get_test_cert_folder('cert')
         )
         self.assertEquals(True, site_info.is_postgres())
+
+    def test_prefix(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'csw_web',
+            self._get_test_data_folder('data'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertEquals('pkimber', site_info.prefix())
+        self.assertEquals('dev', site_info.pypirc())
 
     def test_ssl(self):
         site_info = SiteInfo(
@@ -206,10 +225,10 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_ssl_missing(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
-                'na',
+                'csw_web',
                 self._get_test_data_folder('data_missing_ssl')
             )
         self.assertIn(
@@ -218,7 +237,7 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_ssl_missing_cert_folder(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -231,7 +250,7 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_ssl_missing_site_cert_folder(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -244,7 +263,7 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_ssl_site_cert_folder_is_file(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -257,7 +276,7 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_ssl_site_cert_missing(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -270,7 +289,7 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_ssl_site_server_key_missing(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'csw_web',
@@ -283,30 +302,33 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_site_unknown(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
                 'cswsite_doesnotexist',
                 self._get_test_data_folder('data'),
                 self._get_test_cert_folder('cert')
             )
-        self.assertIn('not found in folder', cm.exception.value)
+        self.assertIn(
+            "site 'cswsite_doesnotexist' not found in pillar",
+            cm.exception.value
+        )
 
     def test_lan_and_ssl(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
-                'na',
+                'csw_fourteen',
                 self._get_test_data_folder('data_lan_and_ssl'),
                 self._get_test_cert_folder('cert')
             )
         self.assertIn("LAN, so can't use SSL", cm.exception.value)
 
     def test_no_duplicate_uwsgi_ports(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
                 'drop-temp',
-                'na',
+                'csw_marking',
                 self._get_test_data_folder('data_dup_uwsgi_port'),
                 self._get_test_cert_folder('cert')
             )
@@ -329,9 +351,9 @@ class TestSiteInfo(unittest.TestCase):
         self.assertTrue(True)
 
     def test_no_sites(self):
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             SiteInfo(
-                'drop-temp',
+                'na',
                 'na',
                 self._get_test_data_folder('data_sites_do_not_exist'),
                 self._get_test_cert_folder('cert')

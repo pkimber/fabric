@@ -1,6 +1,6 @@
 import unittest
 
-from lib.server.folder import FolderInfoError
+from lib.error import TaskError
 from lib.server.folder import FolderInfo
 
 
@@ -53,7 +53,7 @@ class TestFolderInfo(unittest.TestCase):
         )
 
     def test_invalid_folder_version(self):
-        with self.assertRaises(FolderInfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             self.folder.install()
         self.assertIn(
             "class wasn't constructed with a version number",

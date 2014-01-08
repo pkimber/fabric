@@ -7,17 +7,8 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.wait import TimeoutException
 
-from lib.site.info import INFO_FOLDER
-
-
-class DriverError(Exception):
-
-    def __init__(self, value):
-        Exception.__init__(self)
-        self.value = value
-
-    def __str__(self):
-        return repr('%s, %s' % (self.__class__.__name__, self.value))
+from lib.dev.folder import get_post_deploy_folder
+from lib.error import TaskError
 
 
 class BrowserDriver(object):
@@ -28,7 +19,7 @@ class BrowserDriver(object):
         self.TITLE = 'title'
         # Use the default location if not supplied
         if not post_deploy_folder:
-            post_deploy_folder = os.path.join(INFO_FOLDER, 'post-deploy')
+            post_deploy_folder = get_post_deploy_folder()
         file_name = os.path.join(
             post_deploy_folder, '{}.txt'.format(site_name)
         )
@@ -42,12 +33,12 @@ class BrowserDriver(object):
     def _check_urls(self, file_name):
         for item in self.urls:
             if not self.URL in item:
-                raise DriverError(
+                raise TaskError(
                     "Each item in the list of 'urls' should have a "
                     "'{}': {}".format(self.URL, file_name)
                 )
             if not self.TITLE in item:
-                raise DriverError(
+                raise TaskError(
                     "Each item in the list of 'urls' should have a "
                     "'{}': {}".format(self.TITLE, file_name)
                 )
@@ -69,7 +60,7 @@ class BrowserDriver(object):
                 lambda driver: title.lower() in driver.title.lower()
             )
         except TimeoutException:
-            raise DriverError(
+            raise TaskError(
                 "Time out waiting for page with title '{}' "
                 "to load: {}".format(title, url)
             )

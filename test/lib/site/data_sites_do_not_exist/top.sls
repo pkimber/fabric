@@ -1,3 +1,3 @@
 base:
-  'drop-*':
+  'drop-temp':
     - db.settings

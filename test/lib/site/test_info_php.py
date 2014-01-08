@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from lib.site.info import InfoError
+from lib.error import TaskError
 from lib.site.info import SiteInfo
 
 
@@ -54,7 +54,7 @@ class TestSiteInfoPhp(unittest.TestCase):
             self._get_test_data_folder('data_php'),
             self._get_test_cert_folder('cert')
         )
-        with self.assertRaises(InfoError) as cm:
+        with self.assertRaises(TaskError) as cm:
             site_info.db_user()
         self.assertIn(
             'maximum length of user name for mysql',

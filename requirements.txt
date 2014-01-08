@@ -1,5 +1,5 @@
 beautifulsoup4==4.3.2
-fabric==1.8.0
+fabric==1.8.1
 gitpython==0.3.2rc1
 hgapi==1.7.1
 ipdb

@@ -4,15 +4,7 @@ import string
 
 from datetime import datetime
 
-
-class PathError(Exception):
-
-    def __init__(self, value):
-        Exception.__init__(self)
-        self.value = value
-
-    def __str__(self):
-        return repr('%s, %s' % (self.__class__.__name__, self.value))
+from lib.error import TaskError
 
 
 class Path(object):
@@ -44,7 +36,7 @@ class Path(object):
             self.user_name()
         )
         if not self._valid(self.name):
-            raise PathError(
+            raise TaskError(
                 'name contains invalid characters: {}'.format(self.name)
             )
 
@@ -52,7 +44,7 @@ class Path(object):
         if file_type in self.options:
             return self.options[file_type].get(self.EXTENSION)
         else:
-            raise PathError("invalid file type: '{}'".format(file_type))
+            raise TaskError("invalid file type: '{}'".format(file_type))
 
     def _remove_ssh_user(self, name):
         result = name

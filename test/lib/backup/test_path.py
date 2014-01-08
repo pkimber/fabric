@@ -3,8 +3,8 @@ import unittest
 
 from datetime import datetime
 
-from lib.backup.path import PathError
 from lib.backup.path import Path
+from lib.error import TaskError
 
 
 class TestPath(unittest.TestCase):
@@ -42,12 +42,12 @@ class TestPath(unittest.TestCase):
         self.assertEquals('/home/web/repo/files', self.path.files_folder())
 
     def test_invalid_name(self):
-        with self.assertRaises(PathError) as cm:
+        with self.assertRaises(TaskError) as cm:
             Path('csw_web_*', 'postgres')
         self.assertIn('invalid characters', cm.exception.value)
 
     def test_invalid_file_type(self):
-        with self.assertRaises(PathError) as cm:
+        with self.assertRaises(TaskError) as cm:
             Path('csw_web_', 'smartie')
         self.assertIn('invalid file type', cm.exception.value)
 

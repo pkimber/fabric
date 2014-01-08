@@ -79,11 +79,11 @@ def run_post_deploy_test(site_name):
     browser_driver.close()
 
 
-def deploy_django(folder_info, site_info, prefix, version):
+def deploy_django(folder_info, site_info, version):
     # download and extract main package
     download_package(
         site_info.site_name(),
-        prefix,
+        site_info.prefix(),
         version,
         folder_info.install_temp()
     )
@@ -91,7 +91,7 @@ def deploy_django(folder_info, site_info, prefix, version):
         folder_info.install(),
         folder_info.install_temp(),
         site_info.site_name(),
-        prefix,
+        site_info.prefix(),
         version
     )
     # virtualenv
@@ -100,7 +100,9 @@ def deploy_django(folder_info, site_info, prefix, version):
     run('ls -l {0}'.format(folder_info.install()))
     # requirements
     install_requirements(
-        prefix, folder_info.install(), folder_info.install_venv()
+        site_info.prefix(),
+        folder_info.install(),
+        folder_info.install_venv()
     )
     command = DjangoCommand(
         folder_info.install(), folder_info.install_venv(), site_info
@@ -144,39 +146,3 @@ def deploy_php(folder_info, site_info):
                 os.path.join(folder_info.upload(), archive),
             ))
 
-@task
-def deploy(server_name, site_name, prefix, version):
-    """ For docs, see https://github.com/pkimber/cloud_docs """
-    site_info = SiteInfo(server_name, site_name)
-    folder_info = FolderInfo(site_name, version)
-    # validate
-    if exists(folder_info.install()):
-        raise Exception(
-            'Install folder {} already exists'.format(folder_info.install())
-        )
-    print(green(folder_info.install()))
-    # create folders
-    if not exists(folder_info.deploy()):
-        run('mkdir {}'.format(folder_info.deploy()))
-    run('mkdir {}'.format(folder_info.install()))
-    run('mkdir {}'.format(folder_info.install_temp()))
-    if site_info.is_php():
-        deploy_php(folder_info, site_info)
-    else:
-        deploy_django(folder_info, site_info, prefix, version)
-    # symbolic link
-    link_install_to_live_folder(folder_info.install(), folder_info.live())
-    if site_info.is_django():
-        django_post_deploy(folder_info)
-    # Post deploy
-    run_post_deploy_test(site_name)
-
-@task
-def ok(site_name):
-    """
-    Test a live site (automatically done at the end of a deploy)
-
-    e.g:
-    fab -f deploy.py ok:name=csw_web
-    """
-    run_post_deploy_test(site_name)

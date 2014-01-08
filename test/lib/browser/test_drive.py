@@ -2,7 +2,7 @@ import os
 import unittest
 
 from lib.browser.drive import BrowserDriver
-from lib.browser.drive import DriverError
+from lib.error import TaskError
 
 
 class TestBrowserDriver(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestBrowserDriver(unittest.TestCase):
     #    BrowserDriver('csw_web', self._test_data_folder())
 
     #def test_driver_missing_url(self):
-    #    with self.assertRaises(DriverError) as cm:
+    #    with self.assertRaises(TaskError) as cm:
     #        BrowserDriver('csw_web_missing_url', self._test_data_folder())
     #    self.assertIn(
     #        "should have a 'url'",
@@ -34,7 +34,7 @@ class TestBrowserDriver(unittest.TestCase):
     #    )
 
     #def test_driver_missing_title(self):
-    #    with self.assertRaises(DriverError) as cm:
+    #    with self.assertRaises(TaskError) as cm:
     #        BrowserDriver('csw_web_missing_title', self._test_data_folder())
     #    self.assertIn(
     #        "should have a 'title'",
@@ -48,7 +48,7 @@ class TestBrowserDriver(unittest.TestCase):
 
     #def test_browser_driver_timeout(self):
     #    driver = BrowserDriver('csw_web_invalid_title', self._test_data_folder())
-    #    with self.assertRaises(DriverError) as cm:
+    #    with self.assertRaises(TaskError) as cm:
     #        driver.test()
     #    self.assertIn(
     #        "Time out waiting for page",
