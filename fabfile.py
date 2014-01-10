@@ -56,15 +56,12 @@ def _local_postgres_user_exists(database_name):
     return cursor.fetchone()
 
 
-@task
-def backup_db():
-    """ For docs, see https://github.com/pkimber/docs """
-    print(green("Backup '{}' on '{}'").format(env.site_name, env.hosts))
-    site_info = SiteInfo(env.hosts, env.site_name)
+def backup_database(server_name, site_name):
+    site_info = SiteInfo(server_name, site_name)
     db_type = 'postgres'
     if site_info.is_mysql():
         db_type = 'mysql'
-    path = Path(env.site_name, db_type)
+    path = Path(site_name, db_type)
     run('mkdir -p {0}'.format(path.remote_folder()))
     if site_info.is_mysql():
         backup = site_info.backup()
@@ -77,7 +74,7 @@ def backup_db():
         ))
     else:
         run('pg_dump -U postgres {0} -f {1}'.format(
-            env.site_name, path.remote_file()
+            site_name, path.remote_file()
         ))
     get(path.remote_file(), path.local_file())
     if site_info.is_mysql():
@@ -87,15 +84,28 @@ def backup_db():
         if _local_database_exists(path.test_database_name()):
             local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(path.test_database_name()))
         local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(path.test_database_name()))
-        if not _local_postgres_user_exists(env.site_name):
-            local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(env.site_name, env.site_name))
+        if not _local_postgres_user_exists(site_name):
+            local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(site_name, site_name))
         local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
             path.test_database_name(), path.local_file()), capture=True
         )
         local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
-            path.test_database_name(), env.site_name, path.user_name()
+            path.test_database_name(), site_name, path.user_name()
         ))
         print(green("psql {}").format(path.test_database_name()))
+
+
+@task
+def backup_db():
+    """For docs, see https://github.com/pkimber/docs"""
+    print(green("Backup '{}' on '{}'").format(env.site_name, env.hosts))
+    backup_database(env.hosts, env.site_name)
+
+
+@task
+def backup_db_deprecated(server_name, site_name):
+    """For old PHP servers on Dreamhost."""
+    backup_database(server_name, site_name)
 
 
 @task
