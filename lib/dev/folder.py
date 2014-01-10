@@ -1,5 +1,7 @@
 import os
 
+from lib.error import TaskError
+
 INFO_FOLDER = '../../module/deploy/'
 
 
