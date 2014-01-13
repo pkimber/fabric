@@ -96,7 +96,7 @@ class SiteInfo(object):
             pip = self._get_pillar_data(pillar_data, self.PIP)
             if self.PREFIX not in pip:
                 raise TaskError(
-                    "'{}' not found in 'pip' pillar: {}".format(self.PREFIX)
+                    "'{}' not found in 'pip' pillar.".format(self.PREFIX)
                 )
             result = pip[self.PREFIX]
         return result
