@@ -3,6 +3,8 @@
 import os
 import yaml
 
+from lib.error import TaskError
+
 
 def get_server_name(pillar_folder, site_name):
     found_sites = False
@@ -18,7 +20,7 @@ def get_server_name(pillar_folder, site_name):
                 with open(file_name, 'r') as fa:
                     attr = yaml.load(fa.read())
                     if len(attr) > 1:
-                        raise ServerNameError(
+                        raise TaskError(
                             "Unexpected state: 'sls' file contains more "
                             "than one key: {}".format(file_name)
                         )
@@ -29,7 +31,7 @@ def get_server_name(pillar_folder, site_name):
                         for name, settings in sites.iteritems():
                             if name == site_name:
                                 if result:
-                                    raise ServerNameError(
+                                    raise TaskError(
                                         "found site '{}' on more than "
                                         "one server in the pillar: '{}' "
                                         "and '{}'".format(
@@ -38,17 +40,17 @@ def get_server_name(pillar_folder, site_name):
                                     )
                                 result = k
     if not found_sites:
-        raise ServerNameError(
+        raise TaskError(
             "Cannot find 'sites' key in the pillar: '{}'".format(
                 pillar_folder
             )
         )
     if not result:
-        raise ServerNameError(
+        raise TaskError(
             "cannot find server name for site '{}'".format(site_name)
         )
     if '*' in result:
-        raise ServerNameError(
+        raise TaskError(
             "'{}' does not appear to be a valid host name".format(result)
         )
     return result
