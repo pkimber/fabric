@@ -254,16 +254,14 @@ def deploy(version):
 
 
 @task
-def haystack_index(prefix, name):
-    """
-    e.g:
-    fab -H web@rs.web.connexionsw haystack_index:prefix=pkimber,name=csw_web
-    """
+def haystack_index():
+    """ For docs, see https://github.com/pkimber/cloud_docs """
+    env.user = 'web'
     print(green("Haystack - reindex: '{}' on '{}' ").format(
-        name, env.host_string)
+        env.site_name, env.hosts)
     )
-    site_info = SiteInfo(prefix, name)
-    folder_info = FolderInfo(name)
+    site_info = SiteInfo(env.hosts, env.site_name)
+    folder_info = FolderInfo(env.site_name)
     command = DjangoCommand(
         folder_info.live(),
         folder_info.live_venv(),
