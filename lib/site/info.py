@@ -43,6 +43,7 @@ class SiteInfo(object):
         self.PROFILE = 'profile'
         self.PSQL = 'psql'
         self.PYPIRC = 'pypirc'
+        self.PYTHON_VERSION = 'python_version'
         self.SECRET_KEY = 'secret_key'
         self.SENDFILE_ROOT = 'sendfile_root'
         self.SITES = 'sites'
@@ -65,6 +66,7 @@ class SiteInfo(object):
         self._media_root = self._get_media_root()
         self._prefix = self._get_prefix(pillar_data)
         self._pypirc = self._get_pypirc(pillar_data)
+        self._python_version = self._get_python_version(pillar_data)
         self._site_info = self._get_site_info(pillar_data)
 
     def _get_db_ip(self, pillar_data):
@@ -91,8 +93,8 @@ class SiteInfo(object):
 
     def _get_prefix(self, pillar_data):
         result = None
-        is_django = pillar_data.get(self.DJANGO, None)
-        if is_django:
+        django = pillar_data.get(self.DJANGO, None)
+        if django:
             pip = self._get_pillar_data(pillar_data, self.PIP)
             if self.PREFIX not in pip:
                 raise TaskError(
@@ -103,14 +105,25 @@ class SiteInfo(object):
 
     def _get_pypirc(self, pillar_data):
         result = None
-        is_django = pillar_data.get(self.DJANGO, None)
-        if is_django:
+        django = pillar_data.get(self.DJANGO, None)
+        if django:
             pip = self._get_pillar_data(pillar_data, self.PIP)
             if self.PYPIRC not in pip:
                 raise TaskError(
                     "'{}' not found in 'pip' pillar: {}".format(self.PYPIRC)
                 )
             result = pip[self.PYPIRC]
+        return result
+
+    def _get_python_version(self, pillar_data):
+        result = None
+        django = pillar_data.get(self.DJANGO, None)
+        if django:
+            result = django[self.PYTHON_VERSION]
+            if not result in (2, 3):
+                raise TaskError(
+                    "python version not found in Django settings."
+                )
         return result
 
     def _get_site_info(self, pillar_data):
@@ -210,8 +223,8 @@ class SiteInfo(object):
                     ": '{}'".format(name)
                 )
         if has_django:
-            is_django = pillar_data.get(self.DJANGO, None)
-            if not is_django:
+            django = pillar_data.get(self.DJANGO, None)
+            if not django:
                 raise TaskError(
                     "cannot find '{}' config key in the pillar "
                     "data.  The config is a global variable used by "
@@ -448,6 +461,9 @@ class SiteInfo(object):
 
     def pypirc(self):
         return self._pypirc
+
+    def python_version(self):
+        return self._python_version
 
     def server_name(self):
         return self._server_name
