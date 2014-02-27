@@ -51,9 +51,17 @@ def install_requirements(prefix, install_folder, venv_folder):
     run("{} install -r {}".format(pip_bin, filename))
 
 
-def mkvirtualenv(venv_folder):
-    print(green("mkvirtualenv: {0}".format(venv_folder)))
-    run('/usr/bin/virtualenv {0}'.format(venv_folder))
+def mkvirtualenv(venv_folder, python_version):
+    print(green("mkvirtualenv: {}, python version {}".format(
+        venv_folder, python_version))
+    )
+    if python_version == 2:
+        binary = ''
+    elif python_version == 3:
+        binary = '--python=/usr/bin/python3 '
+    else:
+        abort('python version must be 2 or 3: {}'.format(python_version))
+    run('/usr/bin/virtualenv {}{}'.format(binary, venv_folder))
 
 
 def link_install_to_live_folder(install_folder, live_folder):
@@ -95,7 +103,7 @@ def deploy_django(folder_info, site_info, version):
         version
     )
     # virtualenv
-    mkvirtualenv(folder_info.install_venv())
+    mkvirtualenv(folder_info.install_venv(), site_info.python_version())
     # debug
     run('ls -l {0}'.format(folder_info.install()))
     # requirements
