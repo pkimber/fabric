@@ -22,6 +22,9 @@ class Path(object):
             'files': {
                 self.EXTENSION: 'tar.gz',
             },
+            'ftp': {
+                self.EXTENSION: 'ftp.tar.gz',
+            },
         }
         self.allowed = string.letters + string.digits + '_'
         self.extension = self._get_extension(file_type)
@@ -69,6 +72,14 @@ class Path(object):
             'web',
             'repo',
             'files',
+        )
+
+    def ftp_folder(self, site_name):
+        return os.path.join(
+            '/',
+            'home',
+            site_name,
+            'site',
         )
 
     def local_file(self):

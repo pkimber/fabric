@@ -125,6 +125,19 @@ def backup_files():
 
 
 @task
+def backup_ftp():
+    site_info = SiteInfo(env.hosts, env.site_name)
+    if not site_info.is_ftp():
+        abort("'{}' is not set-up for 'ftp'".format(env.site_name))
+    print(green("Backup FTP files on '{}'").format(env.host_string))
+    path = Path(env.site_name, 'ftp')
+    run('mkdir -p {0}'.format(path.remote_folder()))
+    with cd(path.ftp_folder(env.site_name)):
+        run('tar -cvzf {} .'.format(path.remote_file()))
+    get(path.remote_file(), path.local_file())
+
+
+@task
 def backup_php_site(server_name, site_name):
     """
 

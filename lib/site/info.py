@@ -27,6 +27,7 @@ class SiteInfo(object):
         self.DB_USER = 'db_user'
         self.DJANGO = 'django'
         self.DOMAIN = 'domain'
+        self.FTP = 'ftp'
         self.LAN = 'lan'
         self.LISTEN_ADDRESS = 'listen_address'
         self.LOCALHOST = 'localhost'
@@ -437,6 +438,12 @@ class SiteInfo(object):
 
     def is_django(self):
         return self._get_setting(self.PROFILE) == self.DJANGO
+
+    def is_ftp(self):
+        if self.FTP in self._site_info:
+            return self._site_info[self.FTP]
+        else:
+            return False
 
     def is_mysql(self):
         return self._get_setting(self.DB_TYPE) == self.MYSQL
