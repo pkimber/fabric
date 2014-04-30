@@ -4,6 +4,7 @@ gitpython==0.3.2rc1
 hgapi==1.7.1
 ipdb
 IPy==0.81
+paramiko==1.13.0
 psycopg2==2.5.1
 pytest==2.4.1
 pyyaml==3.10
