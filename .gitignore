@@ -26,6 +26,7 @@ MANIFEST
 .tox
 nosetests.xml
 temp.db
+venv-*
 
 # Translations
 *.mo
