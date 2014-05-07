@@ -1,12 +1,12 @@
 beautifulsoup4==4.3.2
-fabric==1.8.3
-gitpython==0.3.2rc1
+Fabric==1.8.3
+GitPython==0.3.2.RC1
 hgapi==1.7.1
-ipdb
+ipdb==0.8
 IPy==0.81
-paramiko==1.13.0
+paramiko==1.12.3
 psycopg2==2.5.1
 pytest==2.5.2
-pyyaml==3.10
+PyYAML==3.10
 selenium==2.39.0
 walkdir==0.3
