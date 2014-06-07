@@ -8,6 +8,8 @@ sites:
     secret_key: 'abc'
     ssl: True
     uwsgi_port: '3031'
+    mail:
+      mail_template_type: django
   csw_mail:
     profile: django
     db_pass: myNextPassword
@@ -25,3 +27,5 @@ sites:
     secret_key: 'abc'
     ssl: False
     uwsgi_port: '3033'
+    mail:
+      mail_template_type: mandrill

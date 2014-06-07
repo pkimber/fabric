@@ -7,6 +7,9 @@ from lib.site.info import SiteInfo
 
 class TestSiteInfo(unittest.TestCase):
 
+    def setUp(self):
+        self.maxDiff = None
+
     def _get_test_cert_folder(self, folder_name):
         module_folder = os.path.dirname(os.path.realpath(__file__))
         return os.path.join(module_folder, folder_name)
@@ -133,12 +136,21 @@ class TestSiteInfo(unittest.TestCase):
             'DB_IP': '10.11.10.10',
             'DB_PASS': 'myPassword',
             'DOMAIN': 'westcountrycoders.co.uk',
-            'SSL': 'True',
+            'FTP_STATIC_DIR': 'z1',
+            'FTP_STATIC_URL': 'a1',
+            'MAIL_TEMPLATE_TYPE': 'django',
             'MAILGUN_ACCESS_KEY': 'abc',
             'MAILGUN_SERVER_NAME': 'def',
+            'MANDRILL_API_KEY': 'b3',
+            'MANDRILL_USER_NAME': 'b4',
             'MEDIA_ROOT': '/home/web/repo/project/csw_web/files/',
+            'RECAPTCHA_PRIVATE_KEY': 'pqr',
+            'RECAPTCHA_PUBLIC_KEY': 'stu',
             'SECRET_KEY': 'jkl',
             'SENDFILE_ROOT': 'mno',
+            'SSL': 'True',
+            'STRIPE_PUBLISH_KEY': 'stu',
+            'STRIPE_SECRET_KEY': 'vwx',
         }
         self.assertDictEqual(expected, site_info.env())
 
@@ -154,12 +166,21 @@ class TestSiteInfo(unittest.TestCase):
             'DB_IP': '10.11.10.10',
             'DB_PASS': 'myPassword',
             'DOMAIN': 'westcountrycoders.co.uk',
-            'SSL': 'False',
+            'FTP_STATIC_DIR': 'z1',
+            'FTP_STATIC_URL': 'a1',
+            'MAIL_TEMPLATE_TYPE': 'mandrill',
             'MAILGUN_ACCESS_KEY': 'abc',
             'MAILGUN_SERVER_NAME': 'def',
+            'MANDRILL_API_KEY': 'b3',
+            'MANDRILL_USER_NAME': 'b4',
             'MEDIA_ROOT': '/home/web/repo/project/test_crm/files/',
+            'RECAPTCHA_PRIVATE_KEY': 'pqr',
+            'RECAPTCHA_PUBLIC_KEY': 'stu',
             'SECRET_KEY': 'jkl',
             'SENDFILE_ROOT': 'mno',
+            'SSL': 'False',
+            'STRIPE_PUBLISH_KEY': 'stu',
+            'STRIPE_SECRET_KEY': 'vwx',
         }
         self.assertDictEqual(expected, site_info.env())
 

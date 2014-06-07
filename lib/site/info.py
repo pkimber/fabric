@@ -28,11 +28,17 @@ class SiteInfo(object):
         self.DJANGO = 'django'
         self.DOMAIN = 'domain'
         self.FTP = 'ftp'
+        self.FTP_STATIC_DIR = 'ftp_static_dir'
+        self.FTP_STATIC_URL = 'ftp_static_url'
         self.LAN = 'lan'
         self.LISTEN_ADDRESS = 'listen_address'
         self.LOCALHOST = 'localhost'
+        self.MAIL = 'mail'
+        self.MAIL_TEMPLATE_TYPE = 'mail_template_type'
         self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
         self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
+        self.MANDRILL_API_KEY = 'mandrill_api_key'
+        self.MANDRILL_USER_NAME = 'mandrill_user_name'
         self.MEDIA_ROOT = 'media_root'
         self.MYSQL = 'mysql'
         self.MYSQL_SERVER = 'mysql_server'
@@ -45,10 +51,14 @@ class SiteInfo(object):
         self.PSQL = 'psql'
         self.PYPIRC = 'pypirc'
         self.PYTHON_VERSION = 'python_version'
+        self.RECAPTCHA_PRIVATE_KEY = 'recaptcha_private_key'
+        self.RECAPTCHA_PUBLIC_KEY = 'recaptcha_public_key'
         self.SECRET_KEY = 'secret_key'
         self.SENDFILE_ROOT = 'sendfile_root'
         self.SITES = 'sites'
         self.SSL = 'ssl'
+        self.STRIPE_PUBLISH_KEY = 'stripe_publish_key'
+        self.STRIPE_SECRET_KEY = 'stripe_secret_key'
         self.UWSGI_PORT = 'uwsgi_port'
         # Use the default location if not supplied
         #info_folder = self._find_info_folder()
@@ -403,17 +413,27 @@ class SiteInfo(object):
         'generate_secret_key' command from 'django-extensions' until you get
         one without the '$' character.
         """
+
         return {
             self.ALLOWED_HOSTS.upper(): self.domain(),
             self.DB_IP.upper(): self._db_ip,
             self.DB_PASS.upper(): self.password(),
             self.DOMAIN.upper(): self.domain(),
+            self.FTP_STATIC_DIR.upper(): 'z1',
+            self.FTP_STATIC_URL.upper(): 'a1',
+            self.MAIL_TEMPLATE_TYPE.upper(): self.mail_template_type(),
             self.MAILGUN_ACCESS_KEY.upper(): 'abc',
-            self.SSL.upper(): str(self.ssl()),
             self.MAILGUN_SERVER_NAME.upper(): 'def',
+            self.MANDRILL_API_KEY.upper(): 'b3',
+            self.MANDRILL_USER_NAME.upper(): 'b4',
             self.MEDIA_ROOT.upper(): self._media_root,
+            self.RECAPTCHA_PRIVATE_KEY.upper(): 'pqr',
+            self.RECAPTCHA_PUBLIC_KEY.upper(): 'stu',
             self.SECRET_KEY.upper(): 'jkl',
             self.SENDFILE_ROOT.upper(): 'mno',
+            self.SSL.upper(): str(self.ssl()),
+            self.STRIPE_PUBLISH_KEY.upper(): 'stu',
+            self.STRIPE_SECRET_KEY.upper(): 'vwx',
         }
 
     def db_user(self):
@@ -456,6 +476,16 @@ class SiteInfo(object):
 
     def backup(self):
         return self._get_setting('backup')
+
+    def mail_template_type(self):
+        mail = self._get_setting(self.MAIL)
+        if self.MAIL_TEMPLATE_TYPE in mail:
+            return mail[self.MAIL_TEMPLATE_TYPE]
+        else:
+            raise TaskError(
+                "'mail_template_type' not found in the pillar under the "
+                "'mail' key."
+            )
 
     def packages(self):
         return self._get_setting('packages')
