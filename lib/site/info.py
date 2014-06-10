@@ -25,6 +25,7 @@ class SiteInfo(object):
         self.DB_PASS = 'db_pass'
         self.DB_TYPE = 'db_type'
         self.DB_USER = 'db_user'
+        self.DEFAULT_FROM_EMAIL = 'default_from_email'
         self.DJANGO = 'django'
         self.DOMAIN = 'domain'
         self.FTP = 'ftp'
@@ -418,6 +419,7 @@ class SiteInfo(object):
             self.ALLOWED_HOSTS.upper(): self.domain(),
             self.DB_IP.upper(): self._db_ip,
             self.DB_PASS.upper(): self.password(),
+            self.DEFAULT_FROM_EMAIL.upper(): 'test@pkimber.net',
             self.DOMAIN.upper(): self.domain(),
             self.FTP_STATIC_DIR.upper(): 'z1',
             self.FTP_STATIC_URL.upper(): 'a1',
