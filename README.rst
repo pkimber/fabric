@@ -8,6 +8,9 @@ https://github.com/pkimber/docs
 
 To create the python **2** virtual environment for this project::
 
+  # deactivate any current virtual environments
+  deactivate
+
   virtualenv venv-fabric
   source venv-fabric/bin/activate
   pip install -r requirements.txt
