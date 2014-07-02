@@ -1,3 +1,4 @@
+awscli
 beautifulsoup4==4.3.2
 Fabric==1.8.3
 GitPython==0.3.2.RC1
