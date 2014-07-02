@@ -35,7 +35,6 @@ class SiteInfo(object):
         self.LISTEN_ADDRESS = 'listen_address'
         self.LOCALHOST = 'localhost'
         self.MAIL = 'mail'
-        self.MAIL_TEMPLATE_TYPE = 'mail_template_type'
         self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
         self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
         self.MANDRILL_API_KEY = 'mandrill_api_key'
@@ -164,12 +163,12 @@ class SiteInfo(object):
                 break
         return result
 
-    def _is_valid_ip(self, ip):
-        try:
-            IP(str(ip))
-            return True
-        except ValueError:
-            return False
+    #def _is_valid_ip(self, ip):
+    #    try:
+    #        IP(str(ip))
+    #        return True
+    #    except ValueError:
+    #        return False
 
     def _load_pillar(self, pillar_folder):
         result = {}
@@ -365,22 +364,24 @@ class SiteInfo(object):
             raise TaskError(
                 "Cannot find 'postgres_settings', 'listen_address'."
             )
-        if listen_address == self.LOCALHOST:
-            pass
-        else:
-            if self._is_valid_ip(listen_address):
-                pass
-            else:
-                raise TaskError(
-                    "'postgres_settings', 'listen_address' "
-                    "is an invalid IP address '{}'".format(listen_address)
-                )
-        if not pillar_data.get(self.POSTGRES_SERVER, None):
-            raise TaskError(
-                "Cannot find '{}' config in the pillar. "
-                "The config is a global variable used by salt when setting "
-                "up server state".format(self.POSTGRES_SERVER)
-            )
+        # amazon rds uses a long host name, not an ip address
+        #if listen_address == self.LOCALHOST:
+        #    pass
+        #else:
+        #    if self._is_valid_ip(listen_address):
+        #        pass
+        #    else:
+        #        raise TaskError(
+        #            "'postgres_settings', 'listen_address' "
+        #            "is an invalid IP address '{}'".format(listen_address)
+        #        )
+        # 02/07/2014 - not required if we are not installing a database server
+        #if not pillar_data.get(self.POSTGRES_SERVER, None):
+        #    raise TaskError(
+        #        "Cannot find '{}' config in the pillar. "
+        #        "The config is a global variable used by salt when setting "
+        #        "up server state".format(self.POSTGRES_SERVER)
+        #    )
 
     def _verify_sites(self, pillar_data):
         sites = self._get_pillar_data(pillar_data, self.SITES)
@@ -423,7 +424,6 @@ class SiteInfo(object):
             self.DOMAIN.upper(): self.domain(),
             self.FTP_STATIC_DIR.upper(): 'z1',
             self.FTP_STATIC_URL.upper(): 'a1',
-            self.MAIL_TEMPLATE_TYPE.upper(): self.mail_template_type(),
             self.MAILGUN_ACCESS_KEY.upper(): 'abc',
             self.MAILGUN_SERVER_NAME.upper(): 'def',
             self.MANDRILL_API_KEY.upper(): 'b3',
@@ -479,15 +479,12 @@ class SiteInfo(object):
     def backup(self):
         return self._get_setting('backup')
 
-    def mail_template_type(self):
-        mail = self._get_setting(self.MAIL)
-        if self.MAIL_TEMPLATE_TYPE in mail:
-            return mail[self.MAIL_TEMPLATE_TYPE]
-        else:
-            raise TaskError(
-                "'mail_template_type' not found in the pillar under the "
-                "'mail' key."
-            )
+    #def mail_template_type(self):
+    #    result = None
+    #    mail = self._get_setting(self.MAIL)
+    #    if self.MAIL_TEMPLATE_TYPE in mail:
+    #        result = mail[self.MAIL_TEMPLATE_TYPE]
+    #    return result
 
     def packages(self):
         return self._get_setting('packages')

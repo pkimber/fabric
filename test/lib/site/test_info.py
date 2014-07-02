@@ -63,19 +63,6 @@ class TestSiteInfo(unittest.TestCase):
             cm.exception.value
         )
 
-    def test_database_ip_invalid(self):
-        with self.assertRaises(TaskError) as cm:
-            SiteInfo(
-                'drop-temp',
-                'csw_web',
-                self._get_test_data_folder('data_db_ip_invalid'),
-                self._get_test_cert_folder('cert')
-            )
-        self.assertIn(
-            "is an invalid IP",
-            cm.exception.value
-        )
-
     def test_database_password(self):
         site_info = SiteInfo(
             'drop-temp',
@@ -139,7 +126,6 @@ class TestSiteInfo(unittest.TestCase):
             'DOMAIN': 'westcountrycoders.co.uk',
             'FTP_STATIC_DIR': 'z1',
             'FTP_STATIC_URL': 'a1',
-            'MAIL_TEMPLATE_TYPE': 'django',
             'MAILGUN_ACCESS_KEY': 'abc',
             'MAILGUN_SERVER_NAME': 'def',
             'MANDRILL_API_KEY': 'b3',
@@ -170,7 +156,6 @@ class TestSiteInfo(unittest.TestCase):
             'DOMAIN': 'westcountrycoders.co.uk',
             'FTP_STATIC_DIR': 'z1',
             'FTP_STATIC_URL': 'a1',
-            'MAIL_TEMPLATE_TYPE': 'mandrill',
             'MAILGUN_ACCESS_KEY': 'abc',
             'MAILGUN_SERVER_NAME': 'def',
             'MANDRILL_API_KEY': 'b3',
