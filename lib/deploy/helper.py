@@ -116,6 +116,7 @@ def deploy_django(folder_info, site_info, version):
         folder_info.install(), folder_info.install_venv(), site_info
     )
     command.collect_static()
+    command.compress()
     # migrate database and init project
     command.syncdb()
     command.migrate_database()

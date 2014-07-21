@@ -471,6 +471,10 @@ class SiteInfo(object):
     def domain(self):
         return self._get_setting(self.DOMAIN)
 
+    @property
+    def is_amazon(self):
+        return bool(self._get_value(self.AMAZON, self.AWS_S3_ACCESS_KEY_ID))
+
     def is_django(self):
         return self._get_setting(self.PROFILE) == self.DJANGO
 

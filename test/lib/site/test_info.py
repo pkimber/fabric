@@ -184,6 +184,24 @@ class TestSiteInfo(unittest.TestCase):
         )
         self.assertEquals('drop-temp', site_info.server_name())
 
+    def test_is_amazon(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'csw_web',
+            self._get_test_data_folder('data'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertTrue(site_info.is_amazon)
+
+    def test_is_amazon_not(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'csw_web',
+            self._get_test_data_folder('data_not_amazon'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertFalse(site_info.is_amazon)
+
     def test_is_django(self):
         site_info = SiteInfo(
             'drop-temp',
