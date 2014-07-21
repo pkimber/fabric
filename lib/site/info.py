@@ -21,6 +21,9 @@ class SiteInfo(object):
         self._site_name = site_name
         # Some constants
         self.ALLOWED_HOSTS = 'allowed_hosts'
+        self.AMAZON = 'amazon'
+        self.AWS_S3_ACCESS_KEY_ID = 'aws_s3_access_key_id'
+        self.AWS_S3_SECRET_ACCESS_KEY = 'aws_s3_secret_access_key'
         self.DB_IP = 'db_ip'
         self.DB_PASS = 'db_pass'
         self.DB_TYPE = 'db_type'
@@ -69,16 +72,24 @@ class SiteInfo(object):
         if not pillar_folder:
             pillar_folder = get_pillar_folder()
         self._server_name = server_name
-        pillar_data = self._load_pillar(pillar_folder)
-        self._verify_profile(pillar_data)
-        self._verify_sites(pillar_data)
-        self._verify_database_settings(pillar_data)
-        self._db_ip = self._get_db_ip(pillar_data)
+        self.pillar_data = self._load_pillar(pillar_folder)
+        self._verify_profile(self.pillar_data)
+        self._verify_sites(self.pillar_data)
+        self._verify_database_settings(self.pillar_data)
+        self._db_ip = self._get_db_ip(self.pillar_data)
         self._media_root = self._get_media_root()
-        self._prefix = self._get_prefix(pillar_data)
-        self._pypirc = self._get_pypirc(pillar_data)
-        self._python_version = self._get_python_version(pillar_data)
-        self._site_info = self._get_site_info(pillar_data)
+        self._prefix = self._get_prefix(self.pillar_data)
+        self._pypirc = self._get_pypirc(self.pillar_data)
+        self._python_version = self._get_python_version(self.pillar_data)
+        self._site_info = self._get_site_info(self.pillar_data)
+
+    def _get_value(self, key, key_data):
+        """Use 'pillar_data' from the class."""
+        result = None
+        data = self.pillar_data.get(key, None)
+        if data:
+            result = data[key_data]
+        return result
 
     def _get_db_ip(self, pillar_data):
         if self._is_postgres(pillar_data):
@@ -418,6 +429,8 @@ class SiteInfo(object):
 
         return {
             self.ALLOWED_HOSTS.upper(): self.domain(),
+            self.AWS_S3_ACCESS_KEY_ID.upper(): self._get_value(self.AMAZON, self.AWS_S3_ACCESS_KEY_ID),
+            self.AWS_S3_SECRET_ACCESS_KEY.upper(): self._get_value(self.AMAZON, self.AWS_S3_SECRET_ACCESS_KEY),
             self.DB_IP.upper(): self._db_ip,
             self.DB_PASS.upper(): self.password(),
             self.DEFAULT_FROM_EMAIL.upper(): 'test@pkimber.net',

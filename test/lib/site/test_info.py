@@ -120,6 +120,8 @@ class TestSiteInfo(unittest.TestCase):
         )
         expected = {
             'ALLOWED_HOSTS': 'westcountrycoders.co.uk',
+            'AWS_S3_ACCESS_KEY_ID': 'APPLE',
+            'AWS_S3_SECRET_ACCESS_KEY': 'PINEAPPLE',
             'DB_IP': '10.11.10.10',
             'DB_PASS': 'myPassword',
             'DEFAULT_FROM_EMAIL': 'test@pkimber.net',
@@ -150,6 +152,8 @@ class TestSiteInfo(unittest.TestCase):
         )
         expected = {
             'ALLOWED_HOSTS': 'westcountrycoders.co.uk',
+            'AWS_S3_ACCESS_KEY_ID': 'APPLE',
+            'AWS_S3_SECRET_ACCESS_KEY': 'PINEAPPLE',
             'DB_IP': '10.11.10.10',
             'DB_PASS': 'myPassword',
             'DEFAULT_FROM_EMAIL': 'test@pkimber.net',
