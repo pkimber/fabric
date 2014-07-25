@@ -73,6 +73,7 @@ def backup_database(server_name, site_name):
             path.remote_file(),
         ))
     else:
+        run('whoami')
         run('pg_dump -U postgres {0} -f {1}'.format(
             site_name, path.remote_file()
         ))

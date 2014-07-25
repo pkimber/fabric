@@ -427,10 +427,8 @@ class SiteInfo(object):
         one without the '$' character.
         """
 
-        return {
+        result = {
             self.ALLOWED_HOSTS.upper(): self.domain(),
-            self.AWS_S3_ACCESS_KEY_ID.upper(): self._get_value(self.AMAZON, self.AWS_S3_ACCESS_KEY_ID),
-            self.AWS_S3_SECRET_ACCESS_KEY.upper(): self._get_value(self.AMAZON, self.AWS_S3_SECRET_ACCESS_KEY),
             self.DB_IP.upper(): self._db_ip,
             self.DB_PASS.upper(): self.password(),
             self.DEFAULT_FROM_EMAIL.upper(): 'test@pkimber.net',
@@ -450,6 +448,12 @@ class SiteInfo(object):
             self.STRIPE_PUBLISH_KEY.upper(): 'stu',
             self.STRIPE_SECRET_KEY.upper(): 'vwx',
         }
+        if self.is_amazon:
+            result.update({
+                self.AWS_S3_ACCESS_KEY_ID.upper(): self._get_value(self.AMAZON, self.AWS_S3_ACCESS_KEY_ID),
+                self.AWS_S3_SECRET_ACCESS_KEY.upper(): self._get_value(self.AMAZON, self.AWS_S3_SECRET_ACCESS_KEY),
+            })
+        return result
 
     def db_user(self):
         """MySQL has a maximum length for a user name of 16 characters.
