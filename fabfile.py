@@ -121,7 +121,7 @@ def backup_files():
     name = name.replace('-', '_')
     path = Path(name, 'files')
     run('mkdir -p {0}'.format(path.remote_folder()))
-    with cd(path.files_folder()), hide('running', 'stdout'):
+    with cd(path.files_folder()), hide('stdout'):
         run('tar -cvzf {} .'.format(path.remote_file()))
     get(path.remote_file(), path.local_file())
 
