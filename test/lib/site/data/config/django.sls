@@ -1,2 +1,2 @@
 django:
-  python_version: 3
+  True

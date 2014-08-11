@@ -102,15 +102,6 @@ class TestSiteInfo(unittest.TestCase):
             )
         self.assertIn('does not have a database type', cm.exception.value)
 
-    def test_django_version_python(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertEquals(3, site_info.python_version())
-
     def test_env(self):
         site_info = SiteInfo(
             'drop-temp',

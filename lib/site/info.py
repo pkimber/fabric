@@ -53,7 +53,6 @@ class SiteInfo(object):
         self.PROFILE = 'profile'
         self.PSQL = 'psql'
         self.PYPIRC = 'pypirc'
-        self.PYTHON_VERSION = 'python_version'
         self.RECAPTCHA_PRIVATE_KEY = 'recaptcha_private_key'
         self.RECAPTCHA_PUBLIC_KEY = 'recaptcha_public_key'
         self.SECRET_KEY = 'secret_key'
@@ -80,7 +79,6 @@ class SiteInfo(object):
         self._media_root = self._get_media_root()
         self._prefix = self._get_prefix(self.pillar_data)
         self._pypirc = self._get_pypirc(self.pillar_data)
-        self._python_version = self._get_python_version(self.pillar_data)
         self._site_info = self._get_site_info(self.pillar_data)
 
     def _get_value(self, key, key_data):
@@ -135,17 +133,6 @@ class SiteInfo(object):
                     "'{}' not found in 'pip' pillar: {}".format(self.PYPIRC)
                 )
             result = pip[self.PYPIRC]
-        return result
-
-    def _get_python_version(self, pillar_data):
-        result = None
-        django = pillar_data.get(self.DJANGO, None)
-        if django:
-            result = django[self.PYTHON_VERSION]
-            if not result in (2, 3):
-                raise TaskError(
-                    "python version not found in Django settings."
-                )
         return result
 
     def _get_site_info(self, pillar_data):
@@ -518,9 +505,6 @@ class SiteInfo(object):
 
     def pypirc(self):
         return self._pypirc
-
-    def python_version(self):
-        return self._python_version
 
     def server_name(self):
         return self._server_name
