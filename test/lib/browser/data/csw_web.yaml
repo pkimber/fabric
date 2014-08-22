@@ -1,3 +1,4 @@
+test-domain: 'https://test.pkimber.net'
 urls:
 - doc: Google
   title: Google

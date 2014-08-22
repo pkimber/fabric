@@ -26,11 +26,11 @@ def get_pillar_folder():
     return pillar_folder
 
 
-def get_post_deploy_folder():
-    post_deploy_folder = os.path.join(INFO_FOLDER, 'post-deploy')
-    if not os.path.exists(post_deploy_folder):
+def get_test_folder():
+    test_folder = os.path.join(INFO_FOLDER, 'test')
+    if not os.path.exists(test_folder):
         raise TaskError(
-            "post-deploy folder does not exist in the standard location "
-            "on your workstation: {}".format(post_deploy_folder)
+            "'test' folder does not exist in the standard location "
+            "on your workstation: {}".format(test_folder)
         )
-    return post_deploy_folder
+    return test_folder
