@@ -71,15 +71,13 @@ class SiteInfo(object):
         if not pillar_folder:
             pillar_folder = get_pillar_folder()
         self._server_name = server_name
-        self.pillar_data = self._load_pillar(pillar_folder)
+        self._pillar_data = self._load_pillar(pillar_folder)
         self._verify_profile()
         self._verify_sites()
         self._verify_database_settings()
-        self._db_ip = self._get_db_ip()
         self._media_root = self._get_media_root()
-        self._prefix = self._get_prefix()
-        self._pypirc = self._get_pypirc()
-        self._site_info = self._get_site_info()
+        # check the site exists in the pillar
+        self._get_site()
 
     def _get_value(self, key, key_data):
         """Use 'pillar_data' from the class."""
@@ -113,7 +111,7 @@ class SiteInfo(object):
 
     def _get_pillar_data_none(self, key):
         """Get data from the pillar (if it exists)."""
-        return self.pillar_data.get(key, None)
+        return self._pillar_data.get(key, None)
 
     def _get_prefix(self):
         result = None
@@ -139,7 +137,7 @@ class SiteInfo(object):
             result = pip[self.PYPIRC]
         return result
 
-    def _get_site_info(self):
+    def _get_site(self):
         sites = self._get_pillar_data(self.SITES)
         if self._site_name not in sites:
             raise TaskError(
@@ -150,9 +148,10 @@ class SiteInfo(object):
         return sites[self._site_name]
 
     def _get_setting(self, key):
-        if key not in self._site_info:
+        site = self._get_site()
+        if key not in site:
             raise TaskError("No '{}' setting for site".format(key))
-        return self._site_info[key]
+        return site.get(key)
 
     def _is_postgres(self):
         """do any of the sites use postgres"""
@@ -420,7 +419,7 @@ class SiteInfo(object):
 
         result = {
             self.ALLOWED_HOSTS.upper(): self.domain(),
-            self.DB_IP.upper(): self._db_ip,
+            self.DB_IP.upper(): self._get_db_ip(),
             self.DB_PASS.upper(): self.password(),
             self.DEFAULT_FROM_EMAIL.upper(): 'test@pkimber.net',
             self.DOMAIN.upper(): self.domain(),
@@ -453,7 +452,8 @@ class SiteInfo(object):
         setting.
 
         """
-        result = self._site_info.get(self.DB_USER)
+        site = self._get_site()
+        result = site.get(self.DB_USER)
         if not result:
             result = self._site_name
         if self.is_mysql() and len(result) > 16:
@@ -474,8 +474,9 @@ class SiteInfo(object):
         return self._get_setting(self.PROFILE) == self.DJANGO
 
     def is_ftp(self):
-        if self.FTP in self._site_info:
-            return self._site_info[self.FTP]
+        site = self._get_site()
+        if self.FTP in site:
+            return site.get(self.FTP)
         else:
             return False
 
@@ -505,10 +506,10 @@ class SiteInfo(object):
         return self._get_setting(self.DB_PASS)
 
     def prefix(self):
-        return self._prefix
+        return self._get_prefix()
 
     def pypirc(self):
-        return self._pypirc
+        return self._get_pypirc()
 
     def server_name(self):
         return self._server_name
