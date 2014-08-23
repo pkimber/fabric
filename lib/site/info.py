@@ -20,22 +20,6 @@ class SiteInfo(object):
     def __init__(self, server_name, site_name, pillar_folder=None, certificate_folder=None):
         self._site_name = site_name
         # Some constants
-        self.ALLOWED_HOSTS = 'allowed_hosts'
-        self.AMAZON = 'amazon'
-        self.AWS_S3_ACCESS_KEY_ID = 'aws_s3_access_key_id'
-        self.AWS_S3_SECRET_ACCESS_KEY = 'aws_s3_secret_access_key'
-        self.DB_IP = 'db_ip'
-        self.DB_PASS = 'db_pass'
-        self.DB_TYPE = 'db_type'
-        self.DB_USER = 'db_user'
-        self.DEFAULT_FROM_EMAIL = 'default_from_email'
-        self.DJANGO = 'django'
-        self.DOMAIN = 'domain'
-        self.FTP = 'ftp'
-        self.FTP_STATIC_DIR = 'ftp_static_dir'
-        self.FTP_STATIC_URL = 'ftp_static_url'
-        self.LAN = 'lan'
-        self.LISTEN_ADDRESS = 'listen_address'
         self.LOCALHOST = 'localhost'
         self.MAIL = 'mail'
         self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
@@ -90,7 +74,7 @@ class SiteInfo(object):
     def _get_db_ip(self):
         if self._is_postgres():
             settings = self._get_pillar_data(self.POSTGRES_SETTINGS)
-            listen_address = settings[self.LISTEN_ADDRESS]
+            listen_address = settings['listen_address']
             if listen_address == self.LOCALHOST:
                 return ''
             else:
@@ -115,7 +99,7 @@ class SiteInfo(object):
 
     def _get_prefix(self):
         result = None
-        django = self._get_pillar_data_none(self.DJANGO)
+        django = self._get_pillar_data_none('django')
         if django:
             pip = self._get_pillar_data(self.PIP)
             if self.PREFIX not in pip:
@@ -127,7 +111,7 @@ class SiteInfo(object):
 
     def _get_pypirc(self):
         result = None
-        django = self._get_pillar_data_none(self.DJANGO)
+        django = self._get_pillar_data_none('django')
         if django:
             pip = self._get_pillar_data(self.PIP)
             if self.PYPIRC not in pip:
@@ -158,7 +142,7 @@ class SiteInfo(object):
         result = False
         sites = self._get_pillar_data(self.SITES)
         for name, settings in sites.items():
-            database_type = settings[self.DB_TYPE]
+            database_type = settings['db_type']
             if database_type == self.PSQL:
                 result = True
                 break
@@ -220,7 +204,7 @@ class SiteInfo(object):
         for name, settings in sites.items():
             profile = settings.get(self.PROFILE, None)
             if profile:
-                if profile == self.DJANGO:
+                if profile == 'django':
                     has_django = True
                 elif profile == self.PHP:
                     has_php = True
@@ -235,12 +219,12 @@ class SiteInfo(object):
                     ": '{}'".format(name)
                 )
         if has_django:
-            django = self._get_pillar_data_none(self.DJANGO)
+            django = self._get_pillar_data_none('django')
             if not django:
                 raise TaskError(
                     "cannot find '{}' config key in the pillar "
                     "data.  The config is a global variable used by "
-                    "salt when setting up server state".format(self.DJANGO)
+                    "salt when setting up server state".format('django')
                 )
         if has_php:
             is_php = self._get_pillar_data_none(self.PHP)
@@ -326,24 +310,24 @@ class SiteInfo(object):
         has_postgres = False
         sites = self._get_pillar_data(self.SITES)
         for name, settings in sites.items():
-            if self.DB_PASS not in settings:
+            if 'db_pass' not in settings:
                 raise TaskError(
                     "site '{}' does not have a database "
                     "password".format(name)
                 )
-            if self.DB_TYPE not in settings:
+            if 'db_type' not in settings:
                 raise TaskError(
                     "site '{}' does not have a database "
                     "type".format(name)
                 )
-            if settings[self.DB_TYPE] == self.MYSQL:
+            if settings['db_type'] == 'mysql':
                 has_mysql = True
-            elif settings[self.DB_TYPE] == self.PSQL:
+            elif settings['db_type'] == 'psql':
                 has_postgres = True
             else:
                 raise TaskError(
                     "site '{}' has an unknown database "
-                    "type: {}".format(name, settings[self.DB_TYPE])
+                    "type: {}".format(name, settings['db_type'])
                 )
         if has_mysql:
             self._verify_database_settings_mysql()
@@ -360,7 +344,7 @@ class SiteInfo(object):
 
     def _verify_database_settings_postgres(self):
         settings = self._get_pillar_data(self.POSTGRES_SETTINGS)
-        listen_address = settings.get(self.LISTEN_ADDRESS, None)
+        listen_address = settings.get('listen_address', None)
         if not listen_address:
             raise TaskError(
                 "Cannot find 'postgres_settings', 'listen_address'."
@@ -387,7 +371,7 @@ class SiteInfo(object):
     def _verify_sites(self):
         sites = self._get_pillar_data(self.SITES)
         for name, settings in sites.items():
-            if self.DOMAIN not in settings:
+            if 'domain' not in settings:
                 raise TaskError(
                     "site '{}' does not have a domain name".format(name)
                 )
@@ -396,10 +380,10 @@ class SiteInfo(object):
                     "site '{}' does not have SSL 'True' or "
                     "'False'".format(name)
                 )
-            if settings.get(self.LAN):
+            if settings.get('lan'):
                 self._verify_lan_not_ssl(settings)
             if settings.get(self.SSL):
-                self._verify_has_ssl_certificate(settings.get(self.DOMAIN))
+                self._verify_has_ssl_certificate(settings.get('domain'))
         self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):
@@ -418,13 +402,13 @@ class SiteInfo(object):
         """
 
         result = {
-            self.ALLOWED_HOSTS.upper(): self.domain(),
-            self.DB_IP.upper(): self._get_db_ip(),
-            self.DB_PASS.upper(): self.password(),
-            self.DEFAULT_FROM_EMAIL.upper(): 'test@pkimber.net',
-            self.DOMAIN.upper(): self.domain(),
-            self.FTP_STATIC_DIR.upper(): 'z1',
-            self.FTP_STATIC_URL.upper(): 'a1',
+            'ALLOWED_HOSTS': self.domain(),
+            'DB_IP': self._get_db_ip(),
+            'DB_PASS': self.password(),
+            'DEFAULT_FROM_EMAIL': 'test@pkimber.net',
+            'DOMAIN': self.domain(),
+            'FTP_STATIC_DIR': 'z1',
+            'FTP_STATIC_URL': 'a1',
             self.MAILGUN_ACCESS_KEY.upper(): 'abc',
             self.MAILGUN_SERVER_NAME.upper(): 'def',
             self.MANDRILL_API_KEY.upper(): 'b3',
@@ -440,8 +424,8 @@ class SiteInfo(object):
         }
         if self.is_amazon:
             result.update({
-                self.AWS_S3_ACCESS_KEY_ID.upper(): self._get_value(self.AMAZON, self.AWS_S3_ACCESS_KEY_ID),
-                self.AWS_S3_SECRET_ACCESS_KEY.upper(): self._get_value(self.AMAZON, self.AWS_S3_SECRET_ACCESS_KEY),
+                'AWS_S3_ACCESS_KEY_ID': self._get_value('amazon', 'aws_s3_access_key_id'),
+                'AWS_S3_SECRET_ACCESS_KEY': self._get_value('amazon', 'aws_s3_secret_access_key'),
             })
         return result
 
@@ -453,7 +437,7 @@ class SiteInfo(object):
 
         """
         site = self._get_site()
-        result = site.get(self.DB_USER)
+        result = site.get('db_user')
         if not result:
             result = self._site_name
         if self.is_mysql() and len(result) > 16:
@@ -464,30 +448,30 @@ class SiteInfo(object):
         return result
 
     def domain(self):
-        return self._get_setting(self.DOMAIN)
+        return self._get_setting('domain')
 
     @property
     def is_amazon(self):
-        return bool(self._get_value(self.AMAZON, self.AWS_S3_ACCESS_KEY_ID))
+        return bool(self._get_value('amazon', 'aws_s3_access_key_id'))
 
     def is_django(self):
-        return self._get_setting(self.PROFILE) == self.DJANGO
+        return self._get_setting(self.PROFILE) == 'django'
 
     def is_ftp(self):
         site = self._get_site()
-        if self.FTP in site:
-            return site.get(self.FTP)
+        if 'ftp' in site:
+            return site.get('ftp')
         else:
             return False
 
     def is_mysql(self):
-        return self._get_setting(self.DB_TYPE) == self.MYSQL
+        return self._get_setting('db_type') == self.MYSQL
 
     def is_php(self):
         return self._get_setting(self.PROFILE) == self.PHP
 
     def is_postgres(self):
-        return self._get_setting(self.DB_TYPE) == self.PSQL
+        return self._get_setting('db_type') == self.PSQL
 
     def backup(self):
         return self._get_setting('backup')
@@ -503,7 +487,7 @@ class SiteInfo(object):
         return self._get_setting('packages')
 
     def password(self):
-        return self._get_setting(self.DB_PASS)
+        return self._get_setting('db_pass')
 
     def prefix(self):
         return self._get_prefix()
