@@ -72,26 +72,26 @@ class SiteInfo(object):
             pillar_folder = get_pillar_folder()
         self._server_name = server_name
         self.pillar_data = self._load_pillar(pillar_folder)
-        self._verify_profile(self.pillar_data)
-        self._verify_sites(self.pillar_data)
-        self._verify_database_settings(self.pillar_data)
-        self._db_ip = self._get_db_ip(self.pillar_data)
+        self._verify_profile()
+        self._verify_sites()
+        self._verify_database_settings()
+        self._db_ip = self._get_db_ip()
         self._media_root = self._get_media_root()
-        self._prefix = self._get_prefix(self.pillar_data)
-        self._pypirc = self._get_pypirc(self.pillar_data)
-        self._site_info = self._get_site_info(self.pillar_data)
+        self._prefix = self._get_prefix()
+        self._pypirc = self._get_pypirc()
+        self._site_info = self._get_site_info()
 
     def _get_value(self, key, key_data):
         """Use 'pillar_data' from the class."""
         result = None
-        data = self.pillar_data.get(key, None)
+        data = self._get_pillar_data_none(key)
         if data:
             result = data[key_data]
         return result
 
-    def _get_db_ip(self, pillar_data):
-        if self._is_postgres(pillar_data):
-            settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
+    def _get_db_ip(self):
+        if self._is_postgres():
+            settings = self._get_pillar_data(self.POSTGRES_SETTINGS)
             listen_address = settings[self.LISTEN_ADDRESS]
             if listen_address == self.LOCALHOST:
                 return ''
@@ -103,19 +103,23 @@ class SiteInfo(object):
     def _get_media_root(self):
         return '/home/web/repo/project/{}/files/'.format(self._site_name)
 
-    def _get_pillar_data(self, pillar_data, key):
-        result = pillar_data.get(key, None)
+    def _get_pillar_data(self, key):
+        result = self._get_pillar_data_none(key)
         if not result:
             raise TaskError(
                 "Cannot find '{}' key in the pillar data.".format(key)
             )
         return result
 
-    def _get_prefix(self, pillar_data):
+    def _get_pillar_data_none(self, key):
+        """Get data from the pillar (if it exists)."""
+        return self.pillar_data.get(key, None)
+
+    def _get_prefix(self):
         result = None
-        django = pillar_data.get(self.DJANGO, None)
+        django = self._get_pillar_data_none(self.DJANGO)
         if django:
-            pip = self._get_pillar_data(pillar_data, self.PIP)
+            pip = self._get_pillar_data(self.PIP)
             if self.PREFIX not in pip:
                 raise TaskError(
                     "'{}' not found in 'pip' pillar.".format(self.PREFIX)
@@ -123,11 +127,11 @@ class SiteInfo(object):
             result = pip[self.PREFIX]
         return result
 
-    def _get_pypirc(self, pillar_data):
+    def _get_pypirc(self):
         result = None
-        django = pillar_data.get(self.DJANGO, None)
+        django = self._get_pillar_data_none(self.DJANGO)
         if django:
-            pip = self._get_pillar_data(pillar_data, self.PIP)
+            pip = self._get_pillar_data(self.PIP)
             if self.PYPIRC not in pip:
                 raise TaskError(
                     "'{}' not found in 'pip' pillar: {}".format(self.PYPIRC)
@@ -135,8 +139,8 @@ class SiteInfo(object):
             result = pip[self.PYPIRC]
         return result
 
-    def _get_site_info(self, pillar_data):
-        sites = self._get_pillar_data(pillar_data, self.SITES)
+    def _get_site_info(self):
+        sites = self._get_pillar_data(self.SITES)
         if self._site_name not in sites:
             raise TaskError(
                 "site '{}' not found in pillar: {}".format(
@@ -150,10 +154,10 @@ class SiteInfo(object):
             raise TaskError("No '{}' setting for site".format(key))
         return self._site_info[key]
 
-    def _is_postgres(self, pillar_data):
+    def _is_postgres(self):
         """do any of the sites use postgres"""
         result = False
-        sites = self._get_pillar_data(pillar_data, self.SITES)
+        sites = self._get_pillar_data(self.SITES)
         for name, settings in sites.items():
             database_type = settings[self.DB_TYPE]
             if database_type == self.PSQL:
@@ -210,10 +214,10 @@ class SiteInfo(object):
             SSL_SERVER_KEY
         )
 
-    def _verify_profile(self, pillar_data):
+    def _verify_profile(self):
         has_django = False
         has_php = False
-        sites = self._get_pillar_data(pillar_data, self.SITES)
+        sites = self._get_pillar_data(self.SITES)
         for name, settings in sites.items():
             profile = settings.get(self.PROFILE, None)
             if profile:
@@ -232,7 +236,7 @@ class SiteInfo(object):
                     ": '{}'".format(name)
                 )
         if has_django:
-            django = pillar_data.get(self.DJANGO, None)
+            django = self._get_pillar_data_none(self.DJANGO)
             if not django:
                 raise TaskError(
                     "cannot find '{}' config key in the pillar "
@@ -240,7 +244,7 @@ class SiteInfo(object):
                     "salt when setting up server state".format(self.DJANGO)
                 )
         if has_php:
-            is_php = pillar_data.get(self.PHP, None)
+            is_php = self._get_pillar_data_none(self.PHP)
             if not is_php:
                 raise TaskError(
                     "cannot find '{}' config key in the pillar "
@@ -318,10 +322,10 @@ class SiteInfo(object):
                     "pillar file".format(site)
                 )
 
-    def _verify_database_settings(self, pillar_data):
+    def _verify_database_settings(self):
         has_mysql = False
         has_postgres = False
-        sites = self._get_pillar_data(pillar_data, self.SITES)
+        sites = self._get_pillar_data(self.SITES)
         for name, settings in sites.items():
             if self.DB_PASS not in settings:
                 raise TaskError(
@@ -343,20 +347,20 @@ class SiteInfo(object):
                     "type: {}".format(name, settings[self.DB_TYPE])
                 )
         if has_mysql:
-            self._verify_database_settings_mysql(pillar_data)
+            self._verify_database_settings_mysql()
         if has_postgres:
-            self._verify_database_settings_postgres(pillar_data)
+            self._verify_database_settings_postgres()
 
-    def _verify_database_settings_mysql(self, pillar_data):
-        if not pillar_data.get(self.MYSQL_SERVER, None):
+    def _verify_database_settings_mysql(self):
+        if not self._get_pillar_data_none(self.MYSQL_SERVER):
             raise TaskError(
                 "Cannot find '{}' config in the pillar. "
                 "The config is a global variable used by salt when setting "
                 "up server state".format(self.MYSQL_SERVER)
             )
 
-    def _verify_database_settings_postgres(self, pillar_data):
-        settings = self._get_pillar_data(pillar_data, self.POSTGRES_SETTINGS)
+    def _verify_database_settings_postgres(self):
+        settings = self._get_pillar_data(self.POSTGRES_SETTINGS)
         listen_address = settings.get(self.LISTEN_ADDRESS, None)
         if not listen_address:
             raise TaskError(
@@ -381,8 +385,8 @@ class SiteInfo(object):
         #        "up server state".format(self.POSTGRES_SERVER)
         #    )
 
-    def _verify_sites(self, pillar_data):
-        sites = self._get_pillar_data(pillar_data, self.SITES)
+    def _verify_sites(self):
+        sites = self._get_pillar_data(self.SITES)
         for name, settings in sites.items():
             if self.DOMAIN not in settings:
                 raise TaskError(
