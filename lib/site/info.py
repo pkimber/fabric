@@ -367,11 +367,11 @@ class SiteInfo(object):
         """
 
         result = {
-            'ALLOWED_HOSTS': self.domain(),
+            'ALLOWED_HOSTS': self.domain,
             'DB_IP': self._get_db_ip(),
             'DB_PASS': self.password(),
             'DEFAULT_FROM_EMAIL': 'test@pkimber.net',
-            'DOMAIN': self.domain(),
+            'DOMAIN': self.domain,
             'FTP_STATIC_DIR': 'z1',
             'FTP_STATIC_URL': 'a1',
             'MAILGUN_ACCESS_KEY': 'abc',
@@ -413,6 +413,7 @@ class SiteInfo(object):
             )
         return result
 
+    @property
     def domain(self):
         result = None
         if self.is_testing:
@@ -485,10 +486,10 @@ class SiteInfo(object):
         return self._get_setting('ssl')
 
     def ssl_cert(self):
-        return self._ssl_cert(self.domain())
+        return self._ssl_cert(self.domain)
 
     def ssl_server_key(self):
-        return self._ssl_server_key(self.domain())
+        return self._ssl_server_key(self.domain)
 
     def uwsgi_port(self):
         return self._get_setting('uwsgi_port')

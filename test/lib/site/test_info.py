@@ -87,7 +87,7 @@ class TestSiteInfo(unittest.TestCase):
         self.assertIn('does not have a database type', cm.exception.value)
 
     def test_domain(self):
-        self.assertIn('westcountrycoders.co.uk', self._info().domain())
+        self.assertIn('westcountrycoders.co.uk', self._info().domain)
 
     def test_domain_missing(self):
         with self.assertRaises(TaskError) as cm:
@@ -106,7 +106,7 @@ class TestSiteInfo(unittest.TestCase):
             self._get_test_data_folder('data_testing'),
             self._get_test_cert_folder('cert')
         )
-        self.assertIn('test.kbsoftware.co.uk', info.domain())
+        self.assertIn('test.kbsoftware.co.uk', info.domain)
 
     def test_env(self):
         expected = {
