@@ -1,5 +1,3 @@
-test-domain: 'https://test.pkimber.net'
-test-server: 'test-a'
 urls:
 - doc: Google
   title: Google
