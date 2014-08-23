@@ -32,17 +32,9 @@ class SiteInfo(object):
         self._verify_site()
         self._verify_database_settings()
 
-    def _get_value(self, key, key_data):
-        """Use 'pillar_data' from the class."""
-        result = None
-        data = self._get_pillar_data_none(key)
-        if data:
-            result = data[key_data]
-        return result
-
     def _get_db_ip(self):
         if self._is_postgres():
-            settings = self._get_pillar_data('postgres_settings')
+            settings = self._get('postgres_settings')
             listen_address = settings['listen_address']
             if listen_address == 'localhost':
                 return ''
@@ -54,23 +46,23 @@ class SiteInfo(object):
     def _get_media_root(self):
         return '/home/web/repo/project/{}/files/'.format(self._site_name)
 
-    def _get_pillar_data(self, key):
-        result = self._get_pillar_data_none(key)
+    def _get(self, key):
+        result = self._get_none(key)
         if not result:
             raise TaskError(
                 "Cannot find '{}' key in the pillar data.".format(key)
             )
         return result
 
-    def _get_pillar_data_none(self, key):
+    def _get_none(self, key):
         """Get data from the pillar (if it exists)."""
         return self._pillar.get(key, None)
 
     def _get_prefix(self):
         result = None
-        django = self._get_pillar_data_none('django')
+        django = self._get_none('django')
         if django:
-            pip = self._get_pillar_data('pip')
+            pip = self._get('pip')
             if 'prefix' not in pip:
                 raise TaskError(
                     "'{}' not found in 'pip' pillar.".format('prefix')
@@ -80,9 +72,9 @@ class SiteInfo(object):
 
     def _get_pypirc(self):
         result = None
-        django = self._get_pillar_data_none('django')
+        django = self._get_none('django')
         if django:
-            pip = self._get_pillar_data('pip')
+            pip = self._get('pip')
             if 'pypirc' not in pip:
                 raise TaskError(
                     "'{}' not found in 'pip' pillar: {}".format('pypirc')
@@ -91,7 +83,7 @@ class SiteInfo(object):
         return result
 
     def _get_site(self):
-        sites = self._get_pillar_data('sites')
+        sites = self._get('sites')
         if self._site_name not in sites:
             raise TaskError(
                 "site '{}' not found in pillar: {}".format(
@@ -109,7 +101,7 @@ class SiteInfo(object):
     def _is_postgres(self):
         """do any of the sites use postgres"""
         result = False
-        sites = self._get_pillar_data('sites')
+        sites = self._get('sites')
         for name, settings in sites.items():
             database_type = settings['db_type']
             if database_type == 'psql':
@@ -170,7 +162,7 @@ class SiteInfo(object):
     def _verify_profile(self):
         has_django = False
         has_php = False
-        sites = self._get_pillar_data('sites')
+        sites = self._get('sites')
         for name, settings in sites.items():
             profile = settings.get('profile', None)
             if profile:
@@ -189,7 +181,7 @@ class SiteInfo(object):
                     ": '{}'".format(name)
                 )
         if has_django:
-            django = self._get_pillar_data_none('django')
+            django = self._get_none('django')
             if not django:
                 raise TaskError(
                     "cannot find '{}' config key in the pillar "
@@ -197,7 +189,7 @@ class SiteInfo(object):
                     "salt when setting up server state".format('django')
                 )
         if has_php:
-            is_php = self._get_pillar_data_none('php')
+            is_php = self._get_none('php')
             if not is_php:
                 raise TaskError(
                     "cannot find '{}' config key in the pillar "
@@ -278,7 +270,7 @@ class SiteInfo(object):
     def _verify_database_settings(self):
         has_mysql = False
         has_postgres = False
-        sites = self._get_pillar_data('sites')
+        sites = self._get('sites')
         for name, settings in sites.items():
             if 'db_pass' not in settings:
                 raise TaskError(
@@ -305,7 +297,7 @@ class SiteInfo(object):
             self._verify_database_settings_postgres()
 
     def _verify_database_settings_mysql(self):
-        if not self._get_pillar_data_none('mysql_server'):
+        if not self._get_none('mysql_server'):
             raise TaskError(
                 "Cannot find '{}' config in the pillar. "
                 "The config is a global variable used by salt when setting "
@@ -313,7 +305,7 @@ class SiteInfo(object):
             )
 
     def _verify_database_settings_postgres(self):
-        settings = self._get_pillar_data('postgres_settings')
+        settings = self._get('postgres_settings')
         listen_address = settings.get('listen_address', None)
         if not listen_address:
             raise TaskError(
@@ -342,7 +334,7 @@ class SiteInfo(object):
         self._get_site()
 
     def _verify_sites(self):
-        sites = self._get_pillar_data('sites')
+        sites = self._get('sites')
         for name, settings in sites.items():
             if 'domain' not in settings:
                 raise TaskError(
@@ -396,9 +388,10 @@ class SiteInfo(object):
             'STRIPE_SECRET_KEY': 'vwx',
         }
         if self.is_amazon:
+            amazon = self._get('amazon')
             result.update({
-                'AWS_S3_ACCESS_KEY_ID': self._get_value('amazon', 'aws_s3_access_key_id'),
-                'AWS_S3_SECRET_ACCESS_KEY': self._get_value('amazon', 'aws_s3_secret_access_key'),
+                'AWS_S3_ACCESS_KEY_ID': amazon.get('aws_s3_access_key_id'),
+                'AWS_S3_SECRET_ACCESS_KEY': amazon.get('aws_s3_secret_access_key'),
             })
         return result
 
@@ -425,7 +418,7 @@ class SiteInfo(object):
 
     @property
     def is_amazon(self):
-        return bool(self._get_value('amazon', 'aws_s3_access_key_id'))
+        return bool(self._get_none('amazon'))
 
     def is_django(self):
         return self._get_setting('profile') == 'django'
