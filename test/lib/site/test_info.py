@@ -18,24 +18,14 @@ class TestSiteInfo(unittest.TestCase):
         module_folder = os.path.dirname(os.path.realpath(__file__))
         return os.path.join(module_folder, folder_name)
 
-    def test_database_domain(self):
-        site_info = SiteInfo(
+    def _info(self):
+        """This pillar is set-up correctly."""
+        return SiteInfo(
             'drop-temp',
             'csw_web',
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
         )
-        self.assertIn('westcountrycoders.co.uk', site_info.domain())
-
-    def test_database_domain_missing(self):
-        with self.assertRaises(TaskError) as cm:
-            SiteInfo(
-                'drop-temp',
-                'csw_web',
-                self._get_test_data_folder('data_missing_domain'),
-                self._get_test_cert_folder('cert')
-            )
-        self.assertIn('does not have a domain', cm.exception.value)
 
     def test_database_missing_ip(self):
         with self.assertRaises(TaskError) as cm:
@@ -64,13 +54,7 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_database_password(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertIn('myPassword', site_info.password())
+        self.assertIn('myPassword', self._info().password())
 
     def test_database_password_missing(self):
         with self.assertRaises(TaskError) as cm:
@@ -102,13 +86,20 @@ class TestSiteInfo(unittest.TestCase):
             )
         self.assertIn('does not have a database type', cm.exception.value)
 
+    def test_domain(self):
+        self.assertIn('westcountrycoders.co.uk', self._info().domain())
+
+    def test_domain_missing(self):
+        with self.assertRaises(TaskError) as cm:
+            SiteInfo(
+                'drop-temp',
+                'csw_web',
+                self._get_test_data_folder('data_missing_domain'),
+                self._get_test_cert_folder('cert')
+            )
+        self.assertIn('does not have a domain', cm.exception.value)
+
     def test_env(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
         expected = {
             'ALLOWED_HOSTS': 'westcountrycoders.co.uk',
             'AWS_S3_ACCESS_KEY_ID': 'APPLE',
@@ -132,7 +123,7 @@ class TestSiteInfo(unittest.TestCase):
             'STRIPE_PUBLISH_KEY': 'stu',
             'STRIPE_SECRET_KEY': 'vwx',
         }
-        self.assertDictEqual(expected, site_info.env())
+        self.assertDictEqual(expected, self._info().env())
 
     def test_env_ssl_false(self):
         site_info = SiteInfo(
@@ -167,22 +158,10 @@ class TestSiteInfo(unittest.TestCase):
         self.assertDictEqual(expected, site_info.env())
 
     def test_find_server_name(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertEquals('drop-temp', site_info.server_name())
+        self.assertEquals('drop-temp', self._info().server_name())
 
     def test_is_amazon(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertTrue(site_info.is_amazon)
+        self.assertTrue(self._info().is_amazon)
 
     def test_is_amazon_not(self):
         site_info = SiteInfo(
@@ -194,31 +173,13 @@ class TestSiteInfo(unittest.TestCase):
         self.assertFalse(site_info.is_amazon)
 
     def test_is_django(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertEquals(True, site_info.is_django())
+        self.assertEquals(True, self._info().is_django())
 
     def test_is_ftp(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertEquals(False, site_info.is_ftp())
+        self.assertEquals(False, self._info().is_ftp())
 
     def test_is_postgres(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertEquals(True, site_info.is_postgres())
+        self.assertEquals(True, self._info().is_postgres())
 
     def test_prefix(self):
         site_info = SiteInfo(
@@ -227,40 +188,23 @@ class TestSiteInfo(unittest.TestCase):
             self._get_test_data_folder('data'),
             self._get_test_cert_folder('cert')
         )
-        self.assertEquals('pkimber', site_info.prefix())
-        self.assertEquals('dev', site_info.pypirc())
+        info = self._info()
+        self.assertEquals('pkimber', info.prefix())
+        self.assertEquals('dev', info.pypirc())
 
     def test_ssl(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
-        self.assertEquals(True, site_info.ssl())
+        self.assertEquals(True, self._info().ssl())
 
     def test_ssl_certificate_file(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
         self.assertIn(
             'westcountrycoders.co.uk/ssl-unified.crt',
-            site_info.ssl_cert()
+            self._info().ssl_cert()
         )
 
     def test_ssl_server_key(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
         self.assertIn(
             'westcountrycoders.co.uk/server.key',
-            site_info.ssl_server_key()
+            self._info().ssl_server_key()
         )
 
     def test_ssl_missing(self):
