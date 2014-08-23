@@ -59,3 +59,7 @@ class TestBrowserDriver(unittest.TestCase):
     #        cm.exception.value
     #    )
     #    driver.close()
+
+    def test_server(self):
+        driver = BrowserDriver('csw_web', self._test_data_folder())
+        self.assertEqual('test-a', driver.server())

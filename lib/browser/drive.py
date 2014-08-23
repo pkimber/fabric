@@ -69,13 +69,16 @@ class BrowserDriver(object):
         """Return the test domain (if there is one)."""
         return self.data.get('test-domain', None)
 
+    def server(self):
+        """Return the test server (if there is one)."""
+        return self.data.get('test-server', None)
+
     def test(self):
         self._create_browser()
         for item in self.data['urls']:
             url = item.get(self.URL)
             title = item.get(self.TITLE)
             self._get(url, title)
-
 
     def close(self):
         if self.browser:
