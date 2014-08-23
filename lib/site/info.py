@@ -11,6 +11,7 @@ from lib.dev.folder import (
 )
 from lib.error import TaskError
 
+
 SSL_CERT_NAME = 'ssl-unified.crt'
 SSL_SERVER_KEY = 'server.key'
 
@@ -18,23 +19,18 @@ SSL_SERVER_KEY = 'server.key'
 class SiteInfo(object):
 
     def __init__(self, server_name, site_name, pillar_folder=None, certificate_folder=None):
-        self._site_name = site_name
-        # Use the default location if not supplied
-        #info_folder = self._find_info_folder()
-        if certificate_folder:
-            self.certificate_folder = certificate_folder
-        else:
-            self.certificate_folder = get_certificate_folder()
-        if not pillar_folder:
-            pillar_folder = get_pillar_folder()
         self._server_name = server_name
-        self._pillar_data = self._load_pillar(pillar_folder)
+        self._site_name = site_name
+        self._pillar = self._load(pillar_folder)
+        if certificate_folder == None:
+            self.certificate_folder = get_certificate_folder()
+        else:
+            self.certificate_folder = certificate_folder
+        self._media_root = self._get_media_root()
         self._verify_profile()
         self._verify_sites()
+        self._verify_site()
         self._verify_database_settings()
-        self._media_root = self._get_media_root()
-        # check the site exists in the pillar
-        self._get_site()
 
     def _get_value(self, key, key_data):
         """Use 'pillar_data' from the class."""
@@ -68,7 +64,7 @@ class SiteInfo(object):
 
     def _get_pillar_data_none(self, key):
         """Get data from the pillar (if it exists)."""
-        return self._pillar_data.get(key, None)
+        return self._pillar.get(key, None)
 
     def _get_prefix(self):
         result = None
@@ -128,16 +124,17 @@ class SiteInfo(object):
     #    except ValueError:
     #        return False
 
-    def _load_pillar(self, pillar_folder):
+    def _load(self, pillar_folder):
+        folder = pillar_folder or get_pillar_folder()
         result = {}
-        with open(os.path.join(pillar_folder, 'top.sls'), 'r') as f:
+        with open(os.path.join(folder, 'top.sls'), 'r') as f:
             data = yaml.load(f.read())
             base = data.get('base')
             for k, v in base.iteritems():
                 if fnmatch.fnmatch(self._server_name, k):
                     for name in v:
                         names = name.split('.')
-                        file_name = os.path.join(pillar_folder, *names)
+                        file_name = os.path.join(folder, *names)
                         file_name = file_name + '.sls'
                         with open(file_name, 'r') as fa:
                             attr = yaml.load(fa.read())
@@ -340,6 +337,9 @@ class SiteInfo(object):
         #        "The config is a global variable used by salt when setting "
         #        "up server state".format(self.POSTGRES_SERVER)
         #    )
+
+    def _verify_site(self):
+        self._get_site()
 
     def _verify_sites(self):
         sites = self._get_pillar_data('sites')
