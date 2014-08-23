@@ -8,7 +8,6 @@ from fabric.api import (
     cd,
     env,
     run,
-    task,
 )
 from fabric.colors import (
     green,
@@ -19,8 +18,6 @@ from fabric.contrib.project import rsync_project
 
 from lib.browser.drive import BrowserDriver
 from lib.manage.command import DjangoCommand
-from lib.server.folder import FolderInfo
-from lib.site.info import SiteInfo
 
 
 env.use_ssh_config = True

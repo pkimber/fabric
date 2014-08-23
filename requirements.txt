@@ -8,6 +8,8 @@ ipdb==0.8
 IPy==0.81
 paramiko==1.12.3
 psycopg2==2.5.1
+pytest-flakes
+pytest-pep8
 pytest==2.5.2
 PyYAML==3.10
 selenium==2.39.0

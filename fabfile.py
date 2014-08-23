@@ -1,5 +1,3 @@
-import os
-
 from fabric.api import (
     abort,
     cd,
@@ -203,14 +201,14 @@ def create_db(table_space=None):
             site_info.db_user(), site_info.password()
             )
         )
-        run('mysql -u root -e "CREATE DATABASE {};"'.format(site_name))
+        run('mysql -u root -e "CREATE DATABASE {};"'.format(env.site_name))
         # I had loads of problems with this one.  bash evaluates back-ticks
         # first.  I think I solved the issue by adding 'shell=False' to 'run'.
         command = (
             "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, "
             "ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON \`{}\`.* TO "
             "'{}'@'localhost' IDENTIFIED BY '{}';".format(
-                site_name, site_info.db_user(), site_info.password()
+                env.site_name, site_info.db_user(), site_info.password()
             )
         )
         run('mysql -u root -e "{}"'.format(command), shell=False)

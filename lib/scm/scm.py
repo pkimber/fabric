@@ -3,6 +3,8 @@ from git.exc import InvalidGitRepositoryError
 
 import hgapi
 
+from lib.error import TaskError
+
 
 class Scm(object):
 

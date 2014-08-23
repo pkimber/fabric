@@ -2,7 +2,6 @@ import os
 import unittest
 
 from lib.dev.folder import get_pillar_folder
-from lib.error import TaskError
 from lib.server.name import (
     get_server_name_live,
     get_server_name_testing,

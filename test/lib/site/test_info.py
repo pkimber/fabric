@@ -211,12 +211,6 @@ class TestSiteInfo(unittest.TestCase):
         self.assertFalse(self._info().is_testing)
 
     def test_prefix(self):
-        site_info = SiteInfo(
-            'drop-temp',
-            'csw_web',
-            self._get_test_data_folder('data'),
-            self._get_test_cert_folder('cert')
-        )
         info = self._info()
         self.assertEquals('pkimber', info.prefix())
         self.assertEquals('dev', info.pypirc())
