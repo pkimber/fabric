@@ -19,33 +19,6 @@ class SiteInfo(object):
 
     def __init__(self, server_name, site_name, pillar_folder=None, certificate_folder=None):
         self._site_name = site_name
-        # Some constants
-        self.LOCALHOST = 'localhost'
-        self.MAIL = 'mail'
-        self.MAILGUN_ACCESS_KEY = 'mailgun_access_key'
-        self.MAILGUN_SERVER_NAME = 'mailgun_server_name'
-        self.MANDRILL_API_KEY = 'mandrill_api_key'
-        self.MANDRILL_USER_NAME = 'mandrill_user_name'
-        self.MEDIA_ROOT = 'media_root'
-        self.MYSQL = 'mysql'
-        self.MYSQL_SERVER = 'mysql_server'
-        self.PHP = 'php'
-        self.PIP = 'pip'
-        self.POSTGRES_SERVER = 'postgres_server'
-        self.POSTGRES_SETTINGS = 'postgres_settings'
-        self.PREFIX = 'prefix'
-        self.PROFILE = 'profile'
-        self.PSQL = 'psql'
-        self.PYPIRC = 'pypirc'
-        self.RECAPTCHA_PRIVATE_KEY = 'recaptcha_private_key'
-        self.RECAPTCHA_PUBLIC_KEY = 'recaptcha_public_key'
-        self.SECRET_KEY = 'secret_key'
-        self.SENDFILE_ROOT = 'sendfile_root'
-        self.SITES = 'sites'
-        self.SSL = 'ssl'
-        self.STRIPE_PUBLISH_KEY = 'stripe_publish_key'
-        self.STRIPE_SECRET_KEY = 'stripe_secret_key'
-        self.UWSGI_PORT = 'uwsgi_port'
         # Use the default location if not supplied
         #info_folder = self._find_info_folder()
         if certificate_folder:
@@ -73,9 +46,9 @@ class SiteInfo(object):
 
     def _get_db_ip(self):
         if self._is_postgres():
-            settings = self._get_pillar_data(self.POSTGRES_SETTINGS)
+            settings = self._get_pillar_data('postgres_settings')
             listen_address = settings['listen_address']
-            if listen_address == self.LOCALHOST:
+            if listen_address == 'localhost':
                 return ''
             else:
                 return str(listen_address)
@@ -101,28 +74,28 @@ class SiteInfo(object):
         result = None
         django = self._get_pillar_data_none('django')
         if django:
-            pip = self._get_pillar_data(self.PIP)
-            if self.PREFIX not in pip:
+            pip = self._get_pillar_data('pip')
+            if 'prefix' not in pip:
                 raise TaskError(
-                    "'{}' not found in 'pip' pillar.".format(self.PREFIX)
+                    "'{}' not found in 'pip' pillar.".format('prefix')
                 )
-            result = pip[self.PREFIX]
+            result = pip['prefix']
         return result
 
     def _get_pypirc(self):
         result = None
         django = self._get_pillar_data_none('django')
         if django:
-            pip = self._get_pillar_data(self.PIP)
-            if self.PYPIRC not in pip:
+            pip = self._get_pillar_data('pip')
+            if 'pypirc' not in pip:
                 raise TaskError(
-                    "'{}' not found in 'pip' pillar: {}".format(self.PYPIRC)
+                    "'{}' not found in 'pip' pillar: {}".format('pypirc')
                 )
-            result = pip[self.PYPIRC]
+            result = pip['pypirc']
         return result
 
     def _get_site(self):
-        sites = self._get_pillar_data(self.SITES)
+        sites = self._get_pillar_data('sites')
         if self._site_name not in sites:
             raise TaskError(
                 "site '{}' not found in pillar: {}".format(
@@ -140,10 +113,10 @@ class SiteInfo(object):
     def _is_postgres(self):
         """do any of the sites use postgres"""
         result = False
-        sites = self._get_pillar_data(self.SITES)
+        sites = self._get_pillar_data('sites')
         for name, settings in sites.items():
             database_type = settings['db_type']
-            if database_type == self.PSQL:
+            if database_type == 'psql':
                 result = True
                 break
         return result
@@ -200,13 +173,13 @@ class SiteInfo(object):
     def _verify_profile(self):
         has_django = False
         has_php = False
-        sites = self._get_pillar_data(self.SITES)
+        sites = self._get_pillar_data('sites')
         for name, settings in sites.items():
-            profile = settings.get(self.PROFILE, None)
+            profile = settings.get('profile', None)
             if profile:
                 if profile == 'django':
                     has_django = True
-                elif profile == self.PHP:
+                elif profile == 'php':
                     has_php = True
                 else:
                     raise TaskError(
@@ -227,12 +200,12 @@ class SiteInfo(object):
                     "salt when setting up server state".format('django')
                 )
         if has_php:
-            is_php = self._get_pillar_data_none(self.PHP)
+            is_php = self._get_pillar_data_none('php')
             if not is_php:
                 raise TaskError(
                     "cannot find '{}' config key in the pillar "
                     "data.  The config is a global variable used by "
-                    "salt when setting up server state".format(self.PHP)
+                    "salt when setting up server state".format('php')
                 )
 
     def _verify_has_ssl_certificate(self, domain):
@@ -273,7 +246,7 @@ class SiteInfo(object):
         This is only because I haven't done the nginx settings yet!
 
         """
-        if settings.get(self.SSL):
+        if settings.get('ssl'):
             raise TaskError(
                 "site '{}' is set to run on a LAN, "
                 "so can't use SSL".format(self._site_name)
@@ -282,13 +255,13 @@ class SiteInfo(object):
     def _verify_no_duplicate_uwsgi_ports(self, sites):
         ports = {}
         for site, settings in sites.items():
-            is_php = settings.get(self.PROFILE) == self.PHP
+            is_php = settings.get('profile') == 'php'
             if not is_php:
-                if self.UWSGI_PORT not in settings:
+                if 'uwsgi_port' not in settings:
                     raise TaskError(
                         "site '{}' does not have a uWSGI port".format(site)
                     )
-                number = settings[self.UWSGI_PORT]
+                number = settings['uwsgi_port']
                 if number in ports:
                     raise TaskError(
                         "site '{}' has the same uWSGI port number "
@@ -308,7 +281,7 @@ class SiteInfo(object):
     def _verify_database_settings(self):
         has_mysql = False
         has_postgres = False
-        sites = self._get_pillar_data(self.SITES)
+        sites = self._get_pillar_data('sites')
         for name, settings in sites.items():
             if 'db_pass' not in settings:
                 raise TaskError(
@@ -335,15 +308,15 @@ class SiteInfo(object):
             self._verify_database_settings_postgres()
 
     def _verify_database_settings_mysql(self):
-        if not self._get_pillar_data_none(self.MYSQL_SERVER):
+        if not self._get_pillar_data_none('mysql_server'):
             raise TaskError(
                 "Cannot find '{}' config in the pillar. "
                 "The config is a global variable used by salt when setting "
-                "up server state".format(self.MYSQL_SERVER)
+                "up server state".format('mysql_server')
             )
 
     def _verify_database_settings_postgres(self):
-        settings = self._get_pillar_data(self.POSTGRES_SETTINGS)
+        settings = self._get_pillar_data('postgres_settings')
         listen_address = settings.get('listen_address', None)
         if not listen_address:
             raise TaskError(
@@ -369,20 +342,20 @@ class SiteInfo(object):
         #    )
 
     def _verify_sites(self):
-        sites = self._get_pillar_data(self.SITES)
+        sites = self._get_pillar_data('sites')
         for name, settings in sites.items():
             if 'domain' not in settings:
                 raise TaskError(
                     "site '{}' does not have a domain name".format(name)
                 )
-            if self.SSL not in settings:
+            if 'ssl' not in settings:
                 raise TaskError(
                     "site '{}' does not have SSL 'True' or "
                     "'False'".format(name)
                 )
             if settings.get('lan'):
                 self._verify_lan_not_ssl(settings)
-            if settings.get(self.SSL):
+            if settings.get('ssl'):
                 self._verify_has_ssl_certificate(settings.get('domain'))
         self._verify_no_duplicate_uwsgi_ports(sites)
 
@@ -409,18 +382,18 @@ class SiteInfo(object):
             'DOMAIN': self.domain(),
             'FTP_STATIC_DIR': 'z1',
             'FTP_STATIC_URL': 'a1',
-            self.MAILGUN_ACCESS_KEY.upper(): 'abc',
-            self.MAILGUN_SERVER_NAME.upper(): 'def',
-            self.MANDRILL_API_KEY.upper(): 'b3',
-            self.MANDRILL_USER_NAME.upper(): 'b4',
-            self.MEDIA_ROOT.upper(): self._media_root,
-            self.RECAPTCHA_PRIVATE_KEY.upper(): 'pqr',
-            self.RECAPTCHA_PUBLIC_KEY.upper(): 'stu',
-            self.SECRET_KEY.upper(): 'jkl',
-            self.SENDFILE_ROOT.upper(): 'mno',
-            self.SSL.upper(): str(self.ssl()),
-            self.STRIPE_PUBLISH_KEY.upper(): 'stu',
-            self.STRIPE_SECRET_KEY.upper(): 'vwx',
+            'MAILGUN_ACCESS_KEY': 'abc',
+            'MAILGUN_SERVER_NAME': 'def',
+            'MANDRILL_API_KEY': 'b3',
+            'MANDRILL_USER_NAME': 'b4',
+            'MEDIA_ROOT': self._media_root,
+            'RECAPTCHA_PRIVATE_KEY': 'pqr',
+            'RECAPTCHA_PUBLIC_KEY': 'stu',
+            'SECRET_KEY': 'jkl',
+            'SENDFILE_ROOT': 'mno',
+            'SSL': str(self.ssl()),
+            'STRIPE_PUBLISH_KEY': 'stu',
+            'STRIPE_SECRET_KEY': 'vwx',
         }
         if self.is_amazon:
             result.update({
@@ -455,7 +428,7 @@ class SiteInfo(object):
         return bool(self._get_value('amazon', 'aws_s3_access_key_id'))
 
     def is_django(self):
-        return self._get_setting(self.PROFILE) == 'django'
+        return self._get_setting('profile') == 'django'
 
     def is_ftp(self):
         site = self._get_site()
@@ -465,13 +438,13 @@ class SiteInfo(object):
             return False
 
     def is_mysql(self):
-        return self._get_setting('db_type') == self.MYSQL
+        return self._get_setting('db_type') == 'mysql'
 
     def is_php(self):
-        return self._get_setting(self.PROFILE) == self.PHP
+        return self._get_setting('profile') == 'php'
 
     def is_postgres(self):
-        return self._get_setting('db_type') == self.PSQL
+        return self._get_setting('db_type') == 'psql'
 
     def backup(self):
         return self._get_setting('backup')
@@ -502,7 +475,7 @@ class SiteInfo(object):
         return self._site_name
 
     def ssl(self):
-        return self._get_setting(self.SSL)
+        return self._get_setting('ssl')
 
     def ssl_cert(self):
         return self._ssl_cert(self.domain())
@@ -511,4 +484,4 @@ class SiteInfo(object):
         return self._ssl_server_key(self.domain())
 
     def uwsgi_port(self):
-        return self._get_setting(self.UWSGI_PORT)
+        return self._get_setting('uwsgi_port')
