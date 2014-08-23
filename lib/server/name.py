@@ -13,10 +13,12 @@ def _get_server_name(pillar_folder, site_name, testing):
         data = yaml.load(f.read())
         base = data.get('base')
         for k, v in base.iteritems():
-
-            info = SiteInfo(k, site_name, pillar_folder)
-            if testing == info.is_testing:
-                result = k
+            try:
+                info = SiteInfo(k, site_name, pillar_folder)
+                if testing == info.is_testing:
+                    result = k
+            except TaskError:
+                pass
     if not result:
         status = 'testing' if testing else 'live'
         raise TaskError(

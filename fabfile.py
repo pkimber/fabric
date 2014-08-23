@@ -29,7 +29,7 @@ from lib.deploy.helper import (
 from lib.dev.folder import get_pillar_folder
 from lib.manage.command import DjangoCommand
 from lib.server.folder import FolderInfo
-from lib.server.name import get_server_name
+from lib.server.name import get_server_name_live
 from lib.site.info import SiteInfo
 
 
@@ -323,7 +323,9 @@ def ok(site_name):
 def site(site_name):
     print(green("site_name: {}".format(site_name)))
     # find the server name for this site
-    server_name = get_server_name(get_pillar_folder(), site_name)
+    pillar_folder = get_pillar_folder()
+    print(green("pillar: {}".format(pillar_folder)))
+    server_name = get_server_name_live(pillar_folder, site_name)
     print(yellow("server_name: {}".format(server_name)))
     # Update env.hosts instead of calling execute()
     env.hosts = server_name

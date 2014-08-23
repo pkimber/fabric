@@ -47,7 +47,7 @@ class SiteInfo(object):
         result = self._get_none(key)
         if not result:
             raise TaskError(
-                "Cannot find '{}' key in the pillar data.".format(key)
+                "Cannot find '{}' key in the pillar data".format(key)
             )
         return result
 
