@@ -22,10 +22,6 @@ class TestBrowserDriver(unittest.TestCase):
     #    with open('/home/patrick/repo/temp/temp.yaml', 'w') as f:
     #        yaml.dump(data, f, default_flow_style=False)
 
-    def test_domain(self):
-        driver = BrowserDriver('csw_web', self._test_data_folder())
-        self.assertEqual('https://test.pkimber.net', driver.domain())
-
     def test_driver(self):
         BrowserDriver('csw_web', self._test_data_folder())
 
@@ -59,7 +55,3 @@ class TestBrowserDriver(unittest.TestCase):
     #        cm.exception.value
     #    )
     #    driver.close()
-
-    def test_server(self):
-        driver = BrowserDriver('csw_web', self._test_data_folder())
-        self.assertEqual('test-a', driver.server())

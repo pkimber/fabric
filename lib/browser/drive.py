@@ -65,14 +65,6 @@ class BrowserDriver(object):
                 "to load: {}".format(title, url)
             )
 
-    def domain(self):
-        """Return the test domain (if there is one)."""
-        return self.data.get('test-domain', None)
-
-    def server(self):
-        """Return the test server (if there is one)."""
-        return self.data.get('test-server', None)
-
     def test(self):
         self._create_browser()
         for item in self.data['urls']:
