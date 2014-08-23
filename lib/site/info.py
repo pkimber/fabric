@@ -414,7 +414,17 @@ class SiteInfo(object):
         return result
 
     def domain(self):
-        return self._get_setting('domain')
+        result = None
+        if self.is_testing:
+            test = self._get_setting('test')
+            result = test.get('domain', None)
+            if not result:
+                raise TaskError(
+                    "we are testing, but there is no 'test', 'domain'."
+                )
+        else:
+            result = self._get_setting('domain')
+        return result
 
     @property
     def is_amazon(self):
@@ -438,6 +448,10 @@ class SiteInfo(object):
 
     def is_postgres(self):
         return self._get_setting('db_type') == 'psql'
+
+    @property
+    def is_testing(self):
+        return bool(self._get_none('testing'))
 
     def backup(self):
         return self._get_setting('backup')
