@@ -15,9 +15,10 @@ def get_certificate_folder():
     return certificate_folder
 
 
-def get_pillar_folder():
+def get_pillar_folder(pillar_folder=None):
     """Find the pillar folder on your local workstation."""
-    pillar_folder = os.path.join(INFO_FOLDER, 'pillar')
+    if pillar_folder == None:
+        pillar_folder = os.path.join(INFO_FOLDER, 'pillar')
     if not os.path.exists(pillar_folder):
         raise TaskError(
             "pillar folder does not exist in the standard location "

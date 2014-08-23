@@ -47,7 +47,8 @@ def get_server_name(pillar_folder, site_name):
         )
     if not result:
         raise TaskError(
-            "cannot find server name for site '{}'".format(site_name)
+            "cannot find server name for site '{}' "
+            "in pillar {}".format(site_name, pillar_folder)
         )
     if '*' in result:
         raise TaskError(

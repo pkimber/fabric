@@ -191,6 +191,7 @@ class TestSiteInfo(unittest.TestCase):
         self.assertEquals(True, self._info().is_postgres())
 
     def test_is_testing(self):
+        """The pillar uses the same sites for live and testing."""
         info = SiteInfo(
             'drop-test',
             'kb_couk',
