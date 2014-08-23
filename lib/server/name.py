@@ -36,5 +36,5 @@ def get_server_name_live(pillar_folder, site_name):
     return _get_server_name(pillar_folder, site_name, testing=False)
 
 
-def get_server_name_testing(pillar_folder, site_name):
+def get_server_name_test(pillar_folder, site_name):
     return _get_server_name(pillar_folder, site_name, testing=True)

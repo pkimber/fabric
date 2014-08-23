@@ -4,7 +4,7 @@ import unittest
 from lib.dev.folder import get_pillar_folder
 from lib.server.name import (
     get_server_name_live,
-    get_server_name_testing,
+    get_server_name_test,
 )
 
 
@@ -36,5 +36,5 @@ class TestName(unittest.TestCase):
         folder = os.path.abspath(folder)
         self.assertEqual(
             'drop-test',
-            get_server_name_testing(get_pillar_folder(folder), 'kb_couk')
+            get_server_name_test(get_pillar_folder(folder), 'kb_couk')
         )

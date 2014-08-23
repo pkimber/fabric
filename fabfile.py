@@ -29,7 +29,10 @@ from lib.deploy.helper import (
 from lib.dev.folder import get_pillar_folder
 from lib.manage.command import DjangoCommand
 from lib.server.folder import FolderInfo
-from lib.server.name import get_server_name_live
+from lib.server.name import (
+    get_server_name_live,
+    get_server_name_test,
+)
 from lib.site.info import SiteInfo
 
 
@@ -324,8 +327,20 @@ def site(site_name):
     print(green("site_name: {}".format(site_name)))
     # find the server name for this site
     pillar_folder = get_pillar_folder()
-    print(green("pillar: {}".format(pillar_folder)))
     server_name = get_server_name_live(pillar_folder, site_name)
+    print(yellow("server_name: {}".format(server_name)))
+    # Update env.hosts instead of calling execute()
+    env.hosts = server_name
+    env.site_name = site_name
+
+
+@task
+def test(site_name):
+    print(cyan("testing, testing... "))
+    print(green("site_name: {}".format(site_name)))
+    # find the server name for this site
+    pillar_folder = get_pillar_folder()
+    server_name = get_server_name_test(pillar_folder, site_name)
     print(yellow("server_name: {}".format(server_name)))
     # Update env.hosts instead of calling execute()
     env.hosts = server_name
@@ -338,12 +353,12 @@ def version():
     run('uname -r')
 
 @task
-def valid(server_name, site_name):
+def valid():
     """ For docs, see https://github.com/pkimber/docs """
-    SiteInfo(server_name, site_name)
+    SiteInfo(env.hosts, env.site_name)
     print(green(
         "The configuration for '{}' appears to be valid"
-        "").format(site_name)
+        "").format(env.site_name)
     )
 
 
