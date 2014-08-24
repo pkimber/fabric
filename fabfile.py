@@ -189,7 +189,13 @@ def create_db(table_space=None):
     psql parameters:
     -X  Do not read the start-up file
     """
-    print(green("create '{}' database on '{}'").format(env.site_name, env.host_string))
+    if env.testing:
+        database_name = '{}_test'.format(env.site_name)
+    else:
+        database_name = env.site_name
+    print(green("create '{}' database on '{}'").format(
+        database_name, env.host_string
+    ))
     site_info = SiteInfo(env.hosts, env.site_name)
     if site_info.is_mysql():
         # TODO
@@ -204,19 +210,19 @@ def create_db(table_space=None):
             site_info.db_user(), site_info.password()
             )
         )
-        run('mysql -u root -e "CREATE DATABASE {};"'.format(env.site_name))
+        run('mysql -u root -e "CREATE DATABASE {};"'.format(database_name))
         # I had loads of problems with this one.  bash evaluates back-ticks
         # first.  I think I solved the issue by adding 'shell=False' to 'run'.
         command = (
             "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, "
             "ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON \`{}\`.* TO "
             "'{}'@'localhost' IDENTIFIED BY '{}';".format(
-                env.site_name, site_info.db_user(), site_info.password()
+                database_name, site_info.db_user(), site_info.password()
             )
         )
         run('mysql -u root -e "{}"'.format(command), shell=False)
     else:
-        #run('psql -X -U postgres -c "DROP DATABASE {};"'.format(env.site_name))
+        #run('psql -X -U postgres -c "DROP DATABASE {};"'.format(database_name))
         run('psql -X -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
             env.site_name, site_info.password()
             ))
@@ -225,7 +231,7 @@ def create_db(table_space=None):
             print(yellow("using block storage, table space {}...".format(table_space)))
             parameter = 'TABLESPACE={}'.format(table_space)
         run('psql -X -U postgres -c "CREATE DATABASE {} WITH OWNER={} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
-            env.site_name, env.site_name, parameter,
+            database_name, env.site_name, parameter,
             ))
     print(green('done'))
 
@@ -323,7 +329,8 @@ def ok(site_name):
 
 
 @task
-def site(site_name):
+def live(site_name):
+    """task for running commands on the live site."""
     print(green("site_name: {}".format(site_name)))
     # find the server name for this site
     pillar_folder = get_pillar_folder()
@@ -336,6 +343,7 @@ def site(site_name):
 
 @task
 def test(site_name):
+    """task for running commands on the test site."""
     print(cyan("testing, testing... "))
     print(green("site_name: {}".format(site_name)))
     # find the server name for this site
@@ -345,12 +353,14 @@ def test(site_name):
     # Update env.hosts instead of calling execute()
     env.hosts = server_name
     env.site_name = site_name
+    env.testing = True
 
 
 @task
 def version():
     print(yellow(env.site_name))
     run('uname -r')
+
 
 @task
 def valid():

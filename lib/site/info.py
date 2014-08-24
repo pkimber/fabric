@@ -383,6 +383,7 @@ class SiteInfo(object):
             'SSL': str(self.ssl()),
             'STRIPE_PUBLISH_KEY': 'stu',
             'STRIPE_SECRET_KEY': 'vwx',
+            'TESTING': str(self.is_testing),
         }
         if self.is_amazon:
             amazon = self._get('amazon')

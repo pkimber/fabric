@@ -131,6 +131,7 @@ class TestSiteInfo(unittest.TestCase):
             'SSL': 'True',
             'STRIPE_PUBLISH_KEY': 'stu',
             'STRIPE_SECRET_KEY': 'vwx',
+            'TESTING': 'False',
         }
         self.assertDictEqual(expected, self._info().env())
 
@@ -163,6 +164,7 @@ class TestSiteInfo(unittest.TestCase):
             'SSL': 'False',
             'STRIPE_PUBLISH_KEY': 'stu',
             'STRIPE_SECRET_KEY': 'vwx',
+            'TESTING': 'False',
         }
         self.assertDictEqual(expected, site_info.env())
 
