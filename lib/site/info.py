@@ -450,7 +450,11 @@ class SiteInfo(object):
 
     @property
     def is_testing(self):
-        return bool(self._get_none('testing'))
+        """server and the site must be set-up for testing."""
+        result = bool(self._get_none('testing'))
+        if result:
+            result = 'test' in self._get_site()
+        return result
 
     def backup(self):
         return self._get_setting('backup')

@@ -3,6 +3,8 @@
 import os
 import yaml
 
+from fabric.colors import cyan
+
 from lib.error import TaskError
 from lib.site.info import SiteInfo
 

@@ -208,6 +208,13 @@ class TestSiteInfo(unittest.TestCase):
             self._get_test_cert_folder('cert')
         )
         self.assertFalse(info.is_testing)
+        info = SiteInfo(
+            'drop-test',
+            'kbnot_couk',
+            self._get_test_data_folder('data_testing'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertFalse(info.is_testing)
 
     def test_is_testing_not(self):
         self.assertFalse(self._info().is_testing)

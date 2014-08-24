@@ -8,3 +8,10 @@ sites:
     db_type: psql
     test:
       domain: test.kbsoftware.co.uk
+  kbnot_couk:
+    profile: django
+    domain: kbnotsoftware.co.uk
+    ssl: False
+    uwsgi_port: 3039
+    db_pass: letmeout
+    db_type: psql
