@@ -218,7 +218,7 @@ class TestSiteInfo(unittest.TestCase):
         self.assertEquals('dev', info.pypirc())
 
     def test_ssl(self):
-        self.assertEquals(True, self._info().ssl())
+        self.assertEquals(True, self._info().ssl)
 
     def test_ssl_certificate_file(self):
         self.assertIn(
@@ -367,3 +367,16 @@ class TestSiteInfo(unittest.TestCase):
                 self._get_test_cert_folder('cert')
             )
         self.assertIn("Cannot find 'sites' key", cm.exception.value)
+
+    def test_url(self):
+        info = self._info()
+        self.assertEqual('https://westcountrycoders.co.uk/', info.url)
+
+    def test_url_testing(self):
+        info = SiteInfo(
+            'drop-test',
+            'kb_couk',
+            self._get_test_data_folder('data_testing'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertEqual('https://test.kbsoftware.co.uk/', info.url)

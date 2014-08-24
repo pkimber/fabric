@@ -380,7 +380,7 @@ class SiteInfo(object):
             'RECAPTCHA_PUBLIC_KEY': 'stu',
             'SECRET_KEY': 'jkl',
             'SENDFILE_ROOT': 'mno',
-            'SSL': str(self.ssl()),
+            'SSL': str(self.ssl),
             'STRIPE_PUBLISH_KEY': 'stu',
             'STRIPE_SECRET_KEY': 'vwx',
             'TESTING': str(self.is_testing),
@@ -477,9 +477,11 @@ class SiteInfo(object):
     def server_name(self):
         return self._server_name
 
+    @property
     def site_name(self):
         return self._site_name
 
+    @property
     def ssl(self):
         return self._get_setting('ssl')
 
@@ -488,6 +490,13 @@ class SiteInfo(object):
 
     def ssl_server_key(self):
         return self._ssl_server_key(self.domain)
+
+    @property
+    def url(self):
+        return '{}://{}/'.format(
+            'https' if self.ssl else 'http',
+            self.domain,
+        )
 
     def uwsgi_port(self):
         return self._get_setting('uwsgi_port')

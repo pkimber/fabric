@@ -9,19 +9,21 @@ from selenium.webdriver.support.wait import TimeoutException
 
 from lib.dev.folder import get_test_folder
 from lib.error import TaskError
+from lib.site.info import SiteInfo
 
 
 class BrowserDriver(object):
 
-    def __init__(self, site_name, test_folder=None):
+    def __init__(self, site_info, test_folder=None):
         self.browser = None
+        self._site_info = site_info
         self.URL = 'url'
         self.TITLE = 'title'
         # Use the default location if not supplied
         if not test_folder:
             test_folder = get_test_folder()
         file_name = os.path.join(
-            test_folder, '{}.yaml'.format(site_name)
+            test_folder, '{}.yaml'.format(self._site_info.site_name)
         )
         self.data = self._load(file_name)
         self._check_urls(file_name)
@@ -67,8 +69,11 @@ class BrowserDriver(object):
 
     def test(self):
         self._create_browser()
+        # get the home URL
+        self._get(self._site_info.url, 'home')
+        # get the other URLs
         for item in self.data['urls']:
-            url = item.get(self.URL)
+            url = '{}{}/'.format(self._site_info.url, item.get(self.URL))
             title = item.get(self.TITLE)
             self._get(url, title)
 

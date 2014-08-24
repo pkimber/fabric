@@ -318,14 +318,15 @@ def haystack_index_clear(prefix, name):
 
 
 @task
-def ok(site_name):
+def ok():
     """
     Test a live site (automatically done at the end of a deploy)
 
     e.g:
     fab -f deploy.py ok:name=csw_web
     """
-    run_post_deploy_test(site_name)
+    site_info = SiteInfo(env.hosts, env.site_name)
+    run_post_deploy_test(site_info)
 
 
 @task
