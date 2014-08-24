@@ -272,7 +272,7 @@ def deploy(version):
     if site_info.is_django():
         django_post_deploy(folder_info)
     # Post deploy
-    run_post_deploy_test(env.site_name)
+    run_post_deploy_test(site_info)
 
 
 @task

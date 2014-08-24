@@ -82,7 +82,7 @@ def run_post_deploy_test(site_name):
 def deploy_django(folder_info, site_info, version):
     # download and extract main package
     download_package(
-        site_info.site_name(),
+        site_info.site_name,
         site_info.prefix(),
         version,
         folder_info.install_temp()
@@ -90,7 +90,7 @@ def deploy_django(folder_info, site_info, version):
     extract_project_package(
         folder_info.install(),
         folder_info.install_temp(),
-        site_info.site_name(),
+        site_info.site_name,
         site_info.prefix(),
         version
     )
