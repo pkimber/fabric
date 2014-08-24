@@ -332,6 +332,7 @@ def ok():
 @task
 def live(site_name):
     """task for running commands on the live site."""
+    print(cyan("is ALIVE!", True))
     print(green("site_name: {}".format(site_name)))
     # find the server name for this site
     pillar_folder = get_pillar_folder()
@@ -345,7 +346,7 @@ def live(site_name):
 @task
 def test(site_name):
     """task for running commands on the test site."""
-    print(cyan("testing, testing... "))
+    print(cyan("testing, testing... ", True))
     print(green("site_name: {}".format(site_name)))
     # find the server name for this site
     pillar_folder = get_pillar_folder()
