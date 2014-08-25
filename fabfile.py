@@ -251,7 +251,7 @@ def deploy(version):
     """ For docs, see https://github.com/pkimber/cloud_docs """
     env.user = 'web'
     site_info = SiteInfo(env.hosts, env.site_name)
-    folder_info = FolderInfo(env.site_name, version)
+    folder_info = FolderInfo(site_info, version)
     # validate
     if exists(folder_info.install()):
         raise Exception(
@@ -283,7 +283,7 @@ def haystack_index():
         env.site_name, env.hosts)
     )
     site_info = SiteInfo(env.hosts, env.site_name)
-    folder_info = FolderInfo(env.site_name)
+    folder_info = FolderInfo(site_info)
     command = DjangoCommand(
         folder_info.live(),
         folder_info.live_venv(),
