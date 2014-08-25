@@ -14,8 +14,8 @@ class FolderInfo(object):
     commands
     """
 
-    def __init__(self, site_name, version=None):
-        self.site_name = site_name
+    def __init__(self, site_info, version=None):
+        self.site_info = site_info
         if version:
             self.date_folder = self._get_date_folder(version)
         else:
@@ -58,7 +58,7 @@ class FolderInfo(object):
         return os.path.join(
             self._repo(),
             'project',
-            self.site_name,
+            self.site_info.site_name,
         )
 
     def ssl_cert(self):
@@ -68,7 +68,7 @@ class FolderInfo(object):
         return os.path.join(self.ssl_cert_folder(), SSL_SERVER_KEY)
 
     def ssl_cert_folder(self):
-        return os.path.join(self.ssl_folder(), self.site_name)
+        return os.path.join(self.ssl_folder(), self.site_info.domain)
 
     def ssl_folder(self):
         return os.path.join(self.srv_folder(), 'ssl')
@@ -85,5 +85,5 @@ class FolderInfo(object):
             self._repo(),
             'uwsgi',
             'vassals',
-            '{}.ini'.format(self.site_name)
+            '{}.ini'.format(self.site_info.site_name)
         )
