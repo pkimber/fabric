@@ -386,9 +386,9 @@ def solr_status():
 def ssl_cert():
     """ For docs, see https://github.com/pkimber/docs."""
     site_info = SiteInfo(env.hosts, env.site_name)
-    if not site_info.ssl():
+    if not site_info.ssl:
         abort("'{}' is not set-up for SSL in the Salt pillar".format(env.site_name))
-    folder_info = FolderInfo(env.site_name)
+    folder_info = FolderInfo(site_info)
     if not exists(folder_info.srv_folder(), use_sudo=True):
         abort("{} folder does not exist on the server".format(folder_info.srv_folder()))
     if exists(folder_info.ssl_folder(), use_sudo=True):
