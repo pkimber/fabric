@@ -276,12 +276,12 @@ def deploy(version):
 
 
 @task
-def haystack_index():
+def reindex():
     """ For docs, see https://github.com/pkimber/cloud_docs """
     env.user = 'web'
     print(green("Haystack - reindex: '{}' on '{}' ").format(
-        env.site_name, env.hosts)
-    )
+        env.site_name, env.hosts
+    ))
     site_info = SiteInfo(env.hosts, env.site_name)
     folder_info = FolderInfo(site_info)
     command = DjangoCommand(
