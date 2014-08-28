@@ -5,7 +5,10 @@ import yaml
 
 from fabric.colors import cyan
 
-from lib.error import TaskError
+from lib.error import (
+    SiteNotFoundError,
+    TaskError,
+)
 from lib.site.info import SiteInfo
 
 
@@ -15,12 +18,15 @@ def _get_server_name(pillar_folder, site_name, testing):
         data = yaml.load(f.read())
         base = data.get('base')
         for k, v in base.iteritems():
-            try:
-                info = SiteInfo(k, site_name, pillar_folder)
-                if testing == info.is_testing:
-                    result = k
-            except TaskError:
+            if '*' in k:
                 pass
+            else:
+                try:
+                    info = SiteInfo(k, site_name, pillar_folder)
+                    if testing == info.is_testing:
+                        result = k
+                except SiteNotFoundError:
+                    pass
     if not result:
         message = ''
         if testing:
@@ -28,7 +34,7 @@ def _get_server_name(pillar_folder, site_name, testing):
         status = 'testing' if testing else 'live'
         raise TaskError(
             "cannot find server name for site '{}' ({}) "
-            "in pillar {}.{}".format(site_name, status, pillar_folder, msg)
+            "in pillar '{}'.{}".format(site_name, status, pillar_folder, msg)
         )
     if '*' in result:
         raise TaskError(

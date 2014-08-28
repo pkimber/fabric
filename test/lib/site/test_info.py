@@ -53,9 +53,6 @@ class TestSiteInfo(unittest.TestCase):
             cm.exception.value
         )
 
-    def test_database_password(self):
-        self.assertIn('myPassword', self._info().password())
-
     def test_database_password_missing(self):
         with self.assertRaises(TaskError) as cm:
             SiteInfo(
@@ -88,6 +85,9 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_db_host(self):
         self.assertEquals('10.11.10.10', self._info().db_host)
+
+    def test_db_pass(self):
+        self.assertIn('myPassword', self._info().db_pass)
 
     def test_domain(self):
         self.assertIn('westcountrycoders.co.uk', self._info().domain)
@@ -221,6 +221,9 @@ class TestSiteInfo(unittest.TestCase):
 
     def test_is_testing_not(self):
         self.assertFalse(self._info().is_testing)
+
+    def test_postgres_pass(self):
+        self.assertEquals('my-pg-pass', self._info().postgres_pass)
 
     def test_prefix(self):
         info = self._info()

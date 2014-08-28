@@ -6,7 +6,10 @@ from lib.dev.folder import (
     get_certificate_folder,
     get_pillar_folder,
 )
-from lib.error import TaskError
+from lib.error import (
+    SiteNotFoundError,
+    TaskError,
+)
 
 
 SSL_CERT_NAME = 'ssl-unified.crt'
@@ -18,7 +21,8 @@ class SiteInfo(object):
     def __init__(self, server_name, site_name, pillar_folder=None, certificate_folder=None):
         self._server_name = server_name
         self._site_name = site_name
-        self._pillar = self._load(pillar_folder)
+        self._pillar_folder = pillar_folder or get_pillar_folder()
+        self._pillar = self._load()
         if certificate_folder == None:
             self.certificate_folder = get_certificate_folder()
         else:
@@ -71,7 +75,7 @@ class SiteInfo(object):
     def _get_site(self):
         sites = self._get('sites')
         if self._site_name not in sites:
-            raise TaskError(
+            raise SiteNotFoundError(
                 "site '{}' not found in pillar: {}".format(
                     self._site_name, sites.keys()
                 )
@@ -102,17 +106,16 @@ class SiteInfo(object):
     #    except ValueError:
     #        return False
 
-    def _load(self, pillar_folder):
-        folder = pillar_folder or get_pillar_folder()
+    def _load(self):
         result = {}
-        with open(os.path.join(folder, 'top.sls'), 'r') as f:
+        with open(os.path.join(self._pillar_folder, 'top.sls'), 'r') as f:
             data = yaml.load(f.read())
             base = data.get('base')
             for k, v in base.iteritems():
                 if fnmatch.fnmatch(self._server_name, k):
                     for name in v:
                         names = name.split('.')
-                        file_name = os.path.join(folder, *names)
+                        file_name = os.path.join(self._pillar_folder, *names)
                         file_name = file_name + '.sls'
                         with open(file_name, 'r') as fa:
                             attr = yaml.load(fa.read())
@@ -293,10 +296,20 @@ class SiteInfo(object):
     def _verify_database_settings_postgres(self):
         settings = self._get('postgres_settings')
         listen_address = settings.get('listen_address', None)
+        postgres_pass = settings.get('postgres_pass', None)
         if not listen_address:
             raise TaskError(
-                "Cannot find 'postgres_settings', 'listen_address'."
+                "Cannot find 'postgres_settings', "
+                "'listen_address'.".format(self._pillar_folder)
             )
+        if listen_address == 'localhost':
+            pass
+        else:
+            if not postgres_pass:
+                raise TaskError(
+                    "Cannot find 'postgres_settings', 'postgres_pass' "
+                    "in pillar '{}'".format(self._pillar_folder)
+                )
         # amazon rds uses a long host name, not an ip address
         #if listen_address == self.LOCALHOST:
         #    pass
@@ -355,7 +368,7 @@ class SiteInfo(object):
         result = {
             'ALLOWED_HOSTS': self.domain,
             'DB_IP': self.db_host,
-            'DB_PASS': self.password(),
+            'DB_PASS': self.db_pass,
             'DEFAULT_FROM_EMAIL': 'test@pkimber.net',
             'DOMAIN': self.domain,
             'FTP_STATIC_DIR': 'z1',
@@ -392,7 +405,11 @@ class SiteInfo(object):
             else:
                 return str(listen_address)
         else:
-            return 'no ip for non-postgres database'
+            raise TaskError('no ip for non-postgres database')
+
+    @property
+    def db_pass(self):
+        return self._get_setting('db_pass')
 
     @property
     def db_user(self):
@@ -471,8 +488,13 @@ class SiteInfo(object):
     def packages(self):
         return self._get_setting('packages')
 
-    def password(self):
-        return self._get_setting('db_pass')
+    @property
+    def postgres_pass(self):
+        if self._is_postgres():
+            settings = self._get('postgres_settings')
+            return settings.get('postgres_pass')
+        else:
+            raise TaskError('no password for non-postgres database')
 
     def prefix(self):
         return self._get_prefix()

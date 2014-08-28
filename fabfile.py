@@ -16,6 +16,7 @@ from fabric.colors import (
     green,
     yellow,
 )
+from fabric.context_managers import shell_env
 from fabric.contrib.files import exists
 
 from lib.backup.path import Path
@@ -225,37 +226,32 @@ def create_db(table_space=None):
         db_host = site_info.db_host
         if db_host:
             db_host = ' --host={} '.format(db_host)
-        run('psql -X {} -U {} -d postgres -c "DROP DATABASE {};"'.format(
-            db_host, env.site_name, database_name
-        ))
-
-        #psql -X  --host=kb.cmf0ips3eb4s.eu-west-1.rds.amazonaws.com  -U activ8rlives_com postgres;
-        #DROP DATABASE activ8rlives_com_test;
-
-
-        run('psql -X {} -U postgres -c "DROP ROLE {};"'.format(
-            db_host, env.site_name
-        ))
-        run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
-            db_host, env.site_name, site_info.password()
+        # log into the 'postgres' database as the owner to delete the database.
+        with shell_env(**dict(PGPASSWORD=site_info.db_pass)):
+            run('psql -X {} -U {} -d postgres -c "DROP DATABASE {};"'.format(
+                db_host, env.site_name, database_name
             ))
-        parameter = ''
-        if table_space:
-            print(yellow("using block storage, table space {}...".format(table_space)))
-            parameter = 'TABLESPACE={}'.format(table_space)
-        run('psql -X {} -U postgres -c "CREATE DATABASE {} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
-            db_host, database_name, parameter,
+        with shell_env(**dict(PGPASSWORD=site_info.postgres_pass)):
+            # 'postgres' user to drop a role
+            run('psql -X {} -U postgres -c "DROP ROLE {};"'.format(
+                db_host, env.site_name
             ))
-        run('psql -X {} -U postgres -c "ALTER DATABASE {} OWNER TO {};"'.format(
-            db_host, database_name, env.site_name,
-            ))
-
-        #psql -X  --host=kb.cmf0ips3eb4s.eu-west-1.rds.amazonaws.com  -U postgres -c "CREATE DATABASE activ8rlives_com_test TEMPLATE=template0 ENCODING='utf-8' ;"                                                                                      
-        #psql -X  --host=kb.cmf0ips3eb4s.eu-west-1.rds.amazonaws.com  -U postgres -c "ALTER DATABASE activ8rlives_com_test OWNER TO activ8rlives_com;"                                                                                                  
-        #psql -X  --host=kb.cmf0ips3eb4s.eu-west-1.rds.amazonaws.com  -U activ8rlives_com activ8rlives_com_test
-
-
-
+            # 'postgres' user to create a role
+            run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
+                db_host, env.site_name, site_info.db_pass
+                ))
+            parameter = ''
+            if table_space:
+                print(yellow("using block storage, table space {}...".format(table_space)))
+                parameter = 'TABLESPACE={}'.format(table_space)
+            # 'postgres' user to create a database
+            run('psql -X {} -U postgres -c "CREATE DATABASE {} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
+                db_host, database_name, parameter,
+                ))
+            # amazon rds the 'postgres' user sets the owner (after the database is created)
+            run('psql -X {} -U postgres -c "ALTER DATABASE {} OWNER TO {};"'.format(
+                db_host, database_name, env.site_name,
+                ))
     print(green('done'))
 
 
