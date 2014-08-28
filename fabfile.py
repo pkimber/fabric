@@ -227,11 +227,17 @@ def create_db(table_space=None):
         if db_host:
             db_host = ' --host={} '.format(db_host)
         # log into the 'postgres' database as the owner to delete the database.
-        with shell_env(**dict(PGPASSWORD=site_info.db_pass)):
+        pg_data = {}
+        if site_info.db_pass:
+            pg_data.update(dict(PGPASSWORD=site_info.db_pass))
+        with shell_env(**pg_data):
             run('psql -X {} -U {} -d postgres -c "DROP DATABASE {};"'.format(
                 db_host, env.site_name, database_name
             ))
-        with shell_env(**dict(PGPASSWORD=site_info.postgres_pass)):
+        pg_data = {}
+        if site_info.postgres_pass:
+            pg_data.update(dict(PGPASSWORD=site_info.postgres_pass))
+        with shell_env(**pg_data):
             # 'postgres' user to drop a role
             run('psql -X {} -U postgres -c "DROP ROLE {};"'.format(
                 db_host, env.site_name
