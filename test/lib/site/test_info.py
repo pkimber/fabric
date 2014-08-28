@@ -1,7 +1,10 @@
 import os
 import unittest
 
-from lib.error import TaskError
+from lib.error import (
+    SiteNotFoundError,
+    TaskError,
+)
 from lib.site.info import SiteInfo
 
 
@@ -323,7 +326,7 @@ class TestSiteInfo(unittest.TestCase):
         )
 
     def test_site_unknown(self):
-        with self.assertRaises(TaskError) as cm:
+        with self.assertRaises(SiteNotFoundError) as cm:
             SiteInfo(
                 'drop-temp',
                 'cswsite_doesnotexist',
