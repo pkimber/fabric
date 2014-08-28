@@ -45,7 +45,7 @@ class TestSiteInfoPhp(unittest.TestCase):
         self.assertDictEqual(expected, packages[1])
 
     def test_mysql_db_username(self):
-        self.assertEquals('hatherleigh_info', self.site_info.db_user())
+        self.assertEquals('hatherleigh_info', self.site_info.db_user)
 
     def test_mysql_db_username_too_long(self):
         site_info = SiteInfo(

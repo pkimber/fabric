@@ -29,17 +29,6 @@ class SiteInfo(object):
         self._verify_site()
         self._verify_database_settings()
 
-    def _get_db_ip(self):
-        if self._is_postgres():
-            settings = self._get('postgres_settings')
-            listen_address = settings['listen_address']
-            if listen_address == 'localhost':
-                return ''
-            else:
-                return str(listen_address)
-        else:
-            return 'no ip for non-postgres database'
-
     def _get_media_root(self):
         return '/home/web/repo/project/{}/files/'.format(self._site_name)
 
@@ -365,7 +354,7 @@ class SiteInfo(object):
 
         result = {
             'ALLOWED_HOSTS': self.domain,
-            'DB_IP': self._get_db_ip(),
+            'DB_IP': self.db_host,
             'DB_PASS': self.password(),
             'DEFAULT_FROM_EMAIL': 'test@pkimber.net',
             'DOMAIN': self.domain,
@@ -393,6 +382,19 @@ class SiteInfo(object):
             })
         return result
 
+    @property
+    def db_host(self):
+        if self._is_postgres():
+            settings = self._get('postgres_settings')
+            listen_address = settings['listen_address']
+            if listen_address == 'localhost':
+                return ''
+            else:
+                return str(listen_address)
+        else:
+            return 'no ip for non-postgres database'
+
+    @property
     def db_user(self):
         """MySQL has a maximum length for a user name of 16 characters.
 

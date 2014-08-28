@@ -86,6 +86,9 @@ class TestSiteInfo(unittest.TestCase):
             )
         self.assertIn('does not have a database type', cm.exception.value)
 
+    def test_db_host(self):
+        self.assertEquals('10.11.10.10', self._info().db_host)
+
     def test_domain(self):
         self.assertIn('westcountrycoders.co.uk', self._info().domain)
 

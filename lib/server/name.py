@@ -22,10 +22,13 @@ def _get_server_name(pillar_folder, site_name, testing):
             except TaskError:
                 pass
     if not result:
+        message = ''
+        if testing:
+            msg = "  Have you added 'testing' into the pillar for this site?"
         status = 'testing' if testing else 'live'
         raise TaskError(
             "cannot find server name for site '{}' ({}) "
-            "in pillar {}".format(site_name, status, pillar_folder)
+            "in pillar {}.{}".format(site_name, status, pillar_folder, msg)
         )
     if '*' in result:
         raise TaskError(
