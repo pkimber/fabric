@@ -28,9 +28,10 @@ def _get_server_name(pillar_folder, site_name, testing):
                 except SiteNotFoundError:
                     pass
     if not result:
-        message = ''
         if testing:
             msg = "  Have you added 'testing' into the pillar for this site?"
+        else:
+            msg = "  Is this a 'testing' server?"
         status = 'testing' if testing else 'live'
         raise TaskError(
             "cannot find server name for site '{}' ({}) "

@@ -37,7 +37,6 @@ from lib.server.name import (
 from lib.site.info import SiteInfo
 
 
-env.use_ssh_config = True
 FILES = 'files'
 POSTGRES = 'postgres'
 
@@ -59,15 +58,17 @@ def _local_postgres_user_exists(database_name):
     return cursor.fetchone()
 
 
-def backup_database(server_name, site_name):
-    site_info = SiteInfo(server_name, site_name)
+@task
+def backup_db():
+    """For docs, see https://github.com/pkimber/docs"""
+    print(green("Backup '{}'").format(env.site_info.site_name))
     db_type = 'postgres'
-    if site_info.is_mysql():
+    if env.site_info.is_mysql():
         db_type = 'mysql'
-    path = Path(site_name, db_type)
+    path = Path(env.site_info.site_name, db_type)
     run('mkdir -p {0}'.format(path.remote_folder()))
-    if site_info.is_mysql():
-        backup = site_info.backup()
+    if env.site_info.is_mysql():
+        backup = env.site_info.backup()
         run('mysqldump --host={} --user={} --password={} {} > {}'.format(
             backup['host'],
             backup['user'],
@@ -78,38 +79,25 @@ def backup_database(server_name, site_name):
     else:
         run('whoami')
         run('pg_dump -U postgres {0} -f {1}'.format(
-            site_name, path.remote_file()
+            env.site_info.site_name, path.remote_file()
         ))
     get(path.remote_file(), path.local_file())
-    if site_info.is_mysql():
+    if env.site_info.is_mysql():
         pass
     else:
         print(green("restore to test database"))
         if _local_database_exists(path.test_database_name()):
             local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(path.test_database_name()))
         local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(path.test_database_name()))
-        if not _local_postgres_user_exists(site_name):
-            local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(site_name, site_name))
+        if not _local_postgres_user_exists(env.site_info.site_name):
+            local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(env.site_info.site_name, env.site_info.site_name))
         local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
             path.test_database_name(), path.local_file()), capture=True
         )
         local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
-            path.test_database_name(), site_name, path.user_name()
+            path.test_database_name(), env.site_info.site_name, path.user_name()
         ))
         print(green("psql {}").format(path.test_database_name()))
-
-
-@task
-def backup_db():
-    """For docs, see https://github.com/pkimber/docs"""
-    print(green("Backup '{}' on '{}'").format(env.site_name, env.hosts))
-    backup_database(env.hosts, env.site_name)
-
-
-@task
-def backup_db_deprecated(server_name, site_name):
-    """For old PHP servers on Dreamhost."""
-    backup_database(server_name, site_name)
 
 
 @task
@@ -130,13 +118,12 @@ def backup_files():
 
 @task
 def backup_ftp():
-    site_info = SiteInfo(env.hosts, env.site_name)
-    if not site_info.is_ftp():
-        abort("'{}' is not set-up for 'ftp'".format(env.site_name))
+    if not env.site_info.is_ftp():
+        abort("'{}' is not set-up for 'ftp'".format(env.site_info.site_name))
     print(green("Backup FTP files on '{}'").format(env.host_string))
-    path = Path(env.site_name, 'ftp')
+    path = Path(env.site_info.site_name, 'ftp')
     run('mkdir -p {0}'.format(path.remote_folder()))
-    with cd(path.ftp_folder(env.site_name)):
+    with cd(path.ftp_folder(env.site_info.site_name)):
         run('tar -cvzf {} .'.format(path.remote_file()))
     get(path.remote_file(), path.local_file())
 
@@ -275,8 +262,7 @@ def db_version():
 def deploy(version):
     """ For docs, see https://github.com/pkimber/cloud_docs """
     env.user = 'web'
-    site_info = SiteInfo(env.hosts, env.site_name)
-    folder_info = FolderInfo(site_info, version)
+    folder_info = FolderInfo(env.site_info, version)
     # validate
     if exists(folder_info.install()):
         raise Exception(
@@ -288,16 +274,16 @@ def deploy(version):
         run('mkdir {}'.format(folder_info.deploy()))
     run('mkdir {}'.format(folder_info.install()))
     run('mkdir {}'.format(folder_info.install_temp()))
-    if site_info.is_php():
-        deploy_php(folder_info, site_info)
+    if env.site_info.is_php():
+        deploy_php(folder_info, env.site_info)
     else:
-        deploy_django(folder_info, site_info, version)
+        deploy_django(folder_info, env.site_info, version)
     # symbolic link
     link_install_to_live_folder(folder_info.install(), folder_info.live())
-    if site_info.is_django():
+    if env.site_info.is_django():
         django_post_deploy(folder_info)
     # Post deploy
-    run_post_deploy_test(site_info)
+    run_post_deploy_test(env.site_info)
 
 
 @task
@@ -307,12 +293,11 @@ def reindex():
     print(green("Haystack - reindex: '{}' on '{}' ").format(
         env.site_name, env.hosts
     ))
-    site_info = SiteInfo(env.hosts, env.site_name)
-    folder_info = FolderInfo(site_info)
+    folder_info = FolderInfo(env.site_info)
     command = DjangoCommand(
         folder_info.live(),
         folder_info.live_venv(),
-        site_info
+        env.site_info
     )
     command.haystack_index()
 
@@ -332,12 +317,11 @@ def haystack_index_clear(prefix, name):
         confirm = confirm.strip().upper()
     if not confirm == 'Y':
         abort("exit")
-    site_info = SiteInfo(prefix, name)
     folder_info = FolderInfo(name)
     command = DjangoCommand(
         folder_info.live(),
         folder_info.live_venv(),
-        site_info
+        env.site_info
     )
     command.haystack_index_clear()
 
@@ -350,37 +334,36 @@ def ok():
     e.g:
     fab -f deploy.py ok:name=csw_web
     """
-    site_info = SiteInfo(env.hosts, env.site_name)
-    run_post_deploy_test(site_info)
+    run_post_deploy_test(env.site_info)
+
+
+def setup(site_name, testing):
+    print(green("site_name: {}".format(site_name)))
+    # find the server name for this site
+    pillar_folder = get_pillar_folder()
+    if testing:
+        print(cyan("testing, testing... ", True))
+        server_name = get_server_name_test(pillar_folder, site_name)
+    else:
+        print(cyan("is ALIVE!", True))
+        server_name = get_server_name_live(pillar_folder, site_name)
+    print(yellow("server_name: {}".format(server_name)))
+    env.site_info = SiteInfo(server_name, site_name)
+    # Update env.hosts instead of calling execute()
+    env.hosts = env.site_info.domain
+    print(yellow("env.hosts: {}".format(env.hosts)))
 
 
 @task
 def live(site_name):
     """task for running commands on the live site."""
-    print(cyan("is ALIVE!", True))
-    print(green("site_name: {}".format(site_name)))
-    # find the server name for this site
-    pillar_folder = get_pillar_folder()
-    server_name = get_server_name_live(pillar_folder, site_name)
-    print(yellow("server_name: {}".format(server_name)))
-    # Update env.hosts instead of calling execute()
-    env.hosts = server_name
-    env.site_name = site_name
+    setup(site_name, False)
 
 
 @task
 def test(site_name):
     """task for running commands on the test site."""
-    print(cyan("testing, testing... ", True))
-    print(green("site_name: {}".format(site_name)))
-    # find the server name for this site
-    pillar_folder = get_pillar_folder()
-    server_name = get_server_name_test(pillar_folder, site_name)
-    print(yellow("server_name: {}".format(server_name)))
-    # Update env.hosts instead of calling execute()
-    env.hosts = server_name
-    env.site_name = site_name
-    env.testing = True
+    setup(site_name, True)
 
 
 @task
@@ -408,12 +391,11 @@ def solr_status():
 
 
 @task
-def ssl_cert():
+def ssl():
     """ For docs, see https://github.com/pkimber/docs."""
-    site_info = SiteInfo(env.hosts, env.site_name)
-    if not site_info.ssl:
+    if not env.site_info.ssl:
         abort("'{}' is not set-up for SSL in the Salt pillar".format(env.site_name))
-    folder_info = FolderInfo(site_info)
+    folder_info = FolderInfo(env.site_info)
     if not exists(folder_info.srv_folder(), use_sudo=True):
         abort("{} folder does not exist on the server".format(folder_info.srv_folder()))
     if exists(folder_info.ssl_folder(), use_sudo=True):
@@ -431,7 +413,7 @@ def ssl_cert():
         sudo('chown www-data:www-data {}'.format(folder_info.ssl_cert_folder()))
         sudo('chmod 0400 {}'.format(folder_info.ssl_cert_folder()))
     put(
-        site_info.ssl_cert(),
+        env.site_info.ssl_cert(),
         folder_info.ssl_cert(),
         use_sudo=True,
         mode=0400,
@@ -439,7 +421,7 @@ def ssl_cert():
     sudo('chown www-data:www-data {}'.format(folder_info.ssl_cert()))
     print(green(folder_info.ssl_cert()))
     put(
-        site_info.ssl_server_key(),
+        env.site_info.ssl_server_key(),
         folder_info.ssl_server_key(),
         use_sudo=True,
         mode=0400,
