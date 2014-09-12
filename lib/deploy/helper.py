@@ -145,4 +145,3 @@ def deploy_php(folder_info, site_info):
                 tar_opt,
                 os.path.join(folder_info.upload(), archive),
             ))
-
