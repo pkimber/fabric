@@ -63,14 +63,13 @@ def link_install_to_live_folder(install_folder, live_folder):
     run('ln -s {0} {1}'.format(install_folder, live_folder))
 
 
-def touch_vassal_ini(vassal_ini_file_name):
-    print(green("touch: ".format(vassal_ini_file_name)))
-    if exists(vassal_ini_file_name):
-        run('touch {0}'.format(vassal_ini_file_name))
-    else:
-        abort('uwsgi ini file does not exist: {0}'.format(
-            vassal_ini_file_name)
-        )
+def touch_vassal_ini(vassal_ini_file_names):
+    print(green("touch"))
+    for file_name in vassal_ini_file_names:
+        if exists(file_name):
+            run('touch {0}'.format(file_name))
+        else:
+            abort('uwsgi ini file does not exist: {0}'.format(file_name))
 
 
 def run_post_deploy_test(site_name):
@@ -116,8 +115,8 @@ def deploy_django(folder_info, site_info, version):
 
 
 def django_post_deploy(folder_info):
-    # re-start uwsgi
-    touch_vassal_ini(folder_info.vassal())
+    # re-start uwsgi apps
+    touch_vassal_ini(folder_info.vassals())
 
 
 def deploy_php(folder_info, site_info):

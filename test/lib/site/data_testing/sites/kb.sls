@@ -6,6 +6,7 @@ sites:
     uwsgi_port: 3038
     db_pass: letmein
     db_type: psql
+    celery: True
     test:
       domain: test.kbsoftware.co.uk
   kbnot_couk:

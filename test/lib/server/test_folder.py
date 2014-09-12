@@ -60,10 +60,10 @@ class TestFolderInfo(unittest.TestCase):
             self.folder.site()
         )
 
-    def test_folder_vassal(self):
-        self.assertEquals(
-            '/home/web/repo/uwsgi/vassals/csw_web.ini',
-            self.folder.vassal()
+    def test_folder_vassals(self):
+        self.assertSequenceEqual(
+            ('/home/web/repo/uwsgi/vassals/csw_web.ini',),
+            self.folder.vassals()
         )
 
     def test_invalid_folder_version(self):

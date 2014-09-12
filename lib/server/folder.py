@@ -80,10 +80,19 @@ class FolderInfo(object):
         """upload archive files using rsync (drupal etc)"""
         return os.path.join(self._repo(), 'upload')
 
-    def vassal(self):
-        return os.path.join(
+    def vassals(self):
+        folder = os.path.join(
             self._repo(),
             'uwsgi',
             'vassals',
-            '{}.ini'.format(self.site_info.site_name)
         )
+        site_name = self.site_info.site_name
+        result = [os.path.join(folder, '{}.ini'.format(site_name)),]
+        if self.site_info.is_celery:
+            result.append(
+                os.path.join(folder, '{}_celery_beat.ini'.format(site_name))
+            )
+            result.append(
+                os.path.join(folder, '{}_celery_worker.ini'.format(site_name))
+            )
+        return result

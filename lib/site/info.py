@@ -448,6 +448,14 @@ class SiteInfo(object):
     def is_amazon(self):
         return bool(self._get_none('amazon'))
 
+    @property
+    def is_celery(self):
+        site = self._get_site()
+        if 'celery' in site:
+            return site.get('celery')
+        else:
+            return False
+
     def is_django(self):
         return self._get_setting('profile') == 'django'
 

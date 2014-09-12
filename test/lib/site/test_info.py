@@ -189,6 +189,15 @@ class TestSiteInfo(unittest.TestCase):
         )
         self.assertFalse(site_info.is_amazon)
 
+    def test_is_celery(self):
+        info = SiteInfo(
+            'drop-test',
+            'kb_couk',
+            self._get_test_data_folder('data_testing'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertTrue(info.is_celery)
+
     def test_is_django(self):
         self.assertEquals(True, self._info().is_django())
 
