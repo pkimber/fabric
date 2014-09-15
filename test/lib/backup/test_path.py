@@ -86,7 +86,8 @@ class TestPath(unittest.TestCase):
 
     def test_test_database_name(self):
         self.assertEquals(
-            self.path.test_database_name(), 'test_csw_web_patrick'
+            self.path.test_database_name(),
+            'test_csw_web_{}'.format(getpass.getuser())
         )
 
     def test_user_name(self):
