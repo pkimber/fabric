@@ -112,7 +112,7 @@ def backup_files():
     path = Path(name, 'files')
     run('mkdir -p {0}'.format(path.remote_folder()))
     with cd(path.files_folder()), hide('stdout'):
-        run('tar -cvzf {} .'.format(path.remote_file()))
+        run('tar -czf {} .'.format(path.remote_file()))
     get(path.remote_file(), path.local_file())
 
 
@@ -177,15 +177,14 @@ def create_db(table_space=None):
     psql parameters:
     -X  Do not read the start-up file
     """
-    if env.testing:
-        database_name = '{}_test'.format(env.site_name)
+    if env.site_info.is_testing:
+        database_name = '{}_test'.format(env.site_info.site_name)
     else:
-        database_name = env.site_name
+        database_name = env.site_info.site_name
     print(green("create '{}' database on '{}'").format(
         database_name, env.host_string
     ))
-    site_info = SiteInfo(env.hosts, env.site_name)
-    if site_info.is_mysql():
+    if env.site_info.is_mysql():
         # TODO
         # Note: these commands will not work if the root user has a password!
         # For more information, see:
@@ -210,20 +209,20 @@ def create_db(table_space=None):
         )
         run('mysql -u root -e "{}"'.format(command), shell=False)
     else:
-        db_host = site_info.db_host
+        db_host = env.site_info.db_host
         if db_host:
             db_host = ' --host={} '.format(db_host)
         # log into the 'postgres' database as the owner to delete the database.
         # pg_data = {}
-        # if site_info.db_pass:
-        #     pg_data.update(dict(PGPASSWORD=site_info.db_pass))
+        # if env.site_info.db_pass:
+        #     pg_data.update(dict(PGPASSWORD=env.site_info.db_pass))
         # with shell_env(**pg_data):
         #     run('psql -X {} -U {} -d postgres -c "DROP DATABASE {};"'.format(
-        #         db_host, env.site_name, database_name
+        #         db_host, env.site_info.site_name, database_name
         #     ))
         pg_data = {}
-        if site_info.postgres_pass:
-            pg_data.update(dict(PGPASSWORD=site_info.postgres_pass))
+        if env.site_info.postgres_pass:
+            pg_data.update(dict(PGPASSWORD=env.site_info.postgres_pass))
         with shell_env(**pg_data):
             # 'postgres' user to drop a role
             # run('psql -X {} -U postgres -c "DROP ROLE {};"'.format(
@@ -231,7 +230,7 @@ def create_db(table_space=None):
             # ))
             # 'postgres' user to create a role
             run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
-                db_host, env.site_name, site_info.db_pass
+                db_host, env.site_info.site_name, env.site_info.db_pass
                 ))
             parameter = ''
             if table_space:
@@ -243,7 +242,7 @@ def create_db(table_space=None):
                 ))
             # amazon rds the 'postgres' user sets the owner (after the database is created)
             run('psql -X {} -U postgres -c "ALTER DATABASE {} OWNER TO {};"'.format(
-                db_host, database_name, env.site_name,
+                db_host, database_name, env.site_info.site_name,
                 ))
     print(green('done'))
 
