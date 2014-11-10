@@ -77,7 +77,6 @@ def backup_db():
             path.remote_file(),
         ))
     else:
-        run('whoami')
         run('pg_dump -U postgres {0} -f {1}'.format(
             env.site_info.site_name, path.remote_file()
         ))
