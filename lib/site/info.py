@@ -446,7 +446,18 @@ class SiteInfo(object):
 
     @property
     def is_amazon(self):
-        return bool(self._get_none('amazon'))
+        # keys are set in 'global/amazon.sls'
+        amazon_key = bool(self._get_none('amazon'))
+        # does this site use amazon?
+        amazon_site = False
+        site = self._get_site()
+        if 'amazon' in site:
+            amazon_site = site.get('amazon')
+        if amazon_site and not amazon_key:
+            raise TaskError(
+                "The site is using 'amazon', but we have no keys!"
+            )
+        return amazon_key and amazon_site
 
     @property
     def is_celery(self):

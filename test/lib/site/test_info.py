@@ -180,6 +180,17 @@ class TestSiteInfo(unittest.TestCase):
     def test_is_amazon(self):
         self.assertTrue(self._info().is_amazon)
 
+    def test_is_amazon_but_no_key(self):
+        """Site wants to use amazon, but there are no keys."""
+        site_info = SiteInfo(
+            'drop-temp',
+            'csw_web',
+            self._get_test_data_folder('data_amazon_but_no_key'),
+            self._get_test_cert_folder('cert')
+        )
+        with self.assertRaises(TaskError):
+            site_info.is_amazon
+
     def test_is_amazon_not(self):
         site_info = SiteInfo(
             'drop-temp',

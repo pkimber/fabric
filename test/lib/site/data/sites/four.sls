@@ -1,5 +1,6 @@
 sites:
   csw_web:
+    amazon: True
     profile: django
     db_pass: myPassword
     db_type: psql
@@ -19,6 +20,7 @@ sites:
     ssl: True
     uwsgi_port: '3032'
   test_crm:
+    amazon: True
     profile: django
     db_pass: myPassword
     db_type: mysql
