@@ -47,7 +47,7 @@ class DjangoCommand(object):
 
         python manage.py syncdb --noinput
         """
-        self._run_command('migrate --all --noinput')
+        self._run_command('migrate --noinput')
 
     def syncdb(self):
         self._run_command('syncdb --noinput')
