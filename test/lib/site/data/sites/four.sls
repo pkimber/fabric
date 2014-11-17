@@ -21,6 +21,7 @@ sites:
     uwsgi_port: '3032'
   test_crm:
     amazon: True
+    compress: False
     profile: django
     db_pass: myPassword
     db_type: mysql

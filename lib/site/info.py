@@ -396,6 +396,13 @@ class SiteInfo(object):
         return result
 
     @property
+    def compress(self):
+        """Use Compressor with Amazon unless 'compress' flag is set 'False'."""
+        site = self._get_site()
+        result = site.get('compress', True)
+        return result and self.is_amazon
+
+    @property
     def db_host(self):
         if self._is_postgres():
             settings = self._get('postgres_settings')
@@ -453,6 +460,7 @@ class SiteInfo(object):
         site = self._get_site()
         if 'amazon' in site:
             amazon_site = site.get('amazon')
+        # check we have keys if the site is using amazon
         if amazon_site and not amazon_key:
             raise TaskError(
                 "The site is using 'amazon', but we have no keys!"

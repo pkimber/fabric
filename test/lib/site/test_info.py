@@ -30,6 +30,18 @@ class TestSiteInfo(unittest.TestCase):
             self._get_test_cert_folder('cert')
         )
 
+    def test_compress(self):
+        self.assertTrue(self._info().compress)
+
+    def test_compress_not(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'test_crm',
+            self._get_test_data_folder('data'),
+            self._get_test_cert_folder('cert')
+        )
+        self.assertFalse(site_info.compress)
+
     def test_database_missing_ip(self):
         with self.assertRaises(TaskError) as cm:
             SiteInfo(

@@ -26,7 +26,7 @@ class DjangoCommand(object):
         self._run_command('collectstatic --noinput')
 
     def compress(self):
-        if self.site_info.is_amazon:
+        if self.site_info.is_amazon and self.site_info.compress:
             self._run_command('compress')
 
     def haystack_index_clear(self):
