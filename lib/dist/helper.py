@@ -140,7 +140,7 @@ def get_packages():
     walk = filtered_walk(
         '.',
         included_files=['__init__.py'],
-        excluded_dirs=['.hg', 'dist', 'example', 'templates', 'venv-*']
+        excluded_dirs=['.git', '.hg', 'dist', 'example', 'templates', 'venv-*']
     )
     result = []
     for path, subdirs, files in walk:
