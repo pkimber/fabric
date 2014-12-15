@@ -39,15 +39,4 @@ class DjangoCommand(object):
         self._run_command('init_project')
 
     def migrate_database(self):
-        """
-        Run South database migrations.
-
-        Note: South will not work on a new empty database until the initial Django
-        and South tables are created using the following command:
-
-        python manage.py syncdb --noinput
-        """
         self._run_command('migrate --noinput')
-
-    def syncdb(self):
-        self._run_command('syncdb --noinput')
