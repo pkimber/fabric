@@ -26,7 +26,8 @@ class BrowserDriver(object):
             test_folder, '{}.yaml'.format(self._site_info.site_name)
         )
         self.data = self._load(file_name)
-        self._check_urls(file_name)
+        if self.data:
+            self._check_urls(file_name)
 
     def _create_browser(self):
         if not self.browser:
@@ -68,14 +69,17 @@ class BrowserDriver(object):
             )
 
     def test(self):
-        self._create_browser()
-        # get the home URL
-        self._get(self._site_info.url, 'home')
-        # get the other URLs
-        for item in self.data['urls']:
-            url = '{}{}/'.format(self._site_info.url, item.get(self.URL))
-            title = item.get(self.TITLE)
-            self._get(url, title)
+        if self.data:
+            self._create_browser()
+            # get the home URL
+            self._get(self._site_info.url, 'home')
+            # get the other URLs
+            for item in self.data['urls']:
+                url = '{}{}/'.format(self._site_info.url, item.get(self.URL))
+                title = item.get(self.TITLE)
+                self._get(url, title)
+        else:
+            print(green("Nothing to test..."))
 
     def close(self):
         if self.browser:
