@@ -1,3 +1,4 @@
+import glob
 import os
 import yaml
 
@@ -24,7 +25,8 @@ def check_is_project_or_app():
     found = False
     for name in ('project', 'example'):
         folder = os.path.join(os.getcwd(), name)
-        if os.path.exists(folder) and os.path.isdir(folder):
+        match = glob.glob('{}*'.format(folder))
+        if len(match) == 1 and os.path.isdir(match[0]):
             found = True
             break
     if not found:
