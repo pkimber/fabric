@@ -17,6 +17,30 @@ from lib.scm.scm import Scm
 FILENAME_SETUP_YAML = 'setup.yaml'
 
 
+def _wildcard_folder(prefix):
+    """
+    Search the current folder for a directory where the name starts with
+    'prefix'.  Check there is just one folder starting with that name and
+    return the actual name without the path e.g::
+
+    folder = _wildcard_folder('example')
+    if folder:
+        print(folder)
+        # 'example-block'
+    """
+    result = None
+    folder = os.path.join(os.getcwd(), prefix)
+    match = glob.glob('{}*'.format(folder))
+    match_count = len(match)
+    if match_count == 1:
+        found = match[0]
+        if os.path.isdir(found):
+            result = os.path.basename(found)
+    elif match_count > 1:
+        abort("Found more than one folder starting with: '{}'".format(prefix))
+    return result
+
+
 def check_is_project_or_app():
     """
     An app should have an 'project' folder or an 'example' folder.
@@ -24,9 +48,8 @@ def check_is_project_or_app():
     print(yellow("check is app or project..."))
     found = False
     for name in ('project', 'example'):
-        folder = os.path.join(os.getcwd(), name)
-        match = glob.glob('{}*'.format(folder))
-        if len(match) == 1 and os.path.isdir(match[0]):
+        folder = _wildcard_folder(name)
+        if folder:
             found = True
             break
     if not found:
@@ -139,10 +162,13 @@ def get_package_data(packages):
 
 def get_packages():
     print(yellow("get packages..."))
+    example_folder = _wildcard_folder('example')
+    if not example_folder:
+        abort("Cannot find a folder starting with the name 'example'")
     walk = filtered_walk(
         '.',
         included_files=['__init__.py'],
-        excluded_dirs=['.git', '.hg', 'dist', 'example', 'templates', 'venv-*']
+        excluded_dirs=['.git', '.hg', 'dist', example_folder, 'templates', 'venv-*']
     )
     result = []
     for path, subdirs, files in walk:
@@ -150,7 +176,7 @@ def get_packages():
             path = path.replace(os.sep, '.').strip('.')
             if path:
                 result.append('{0}'.format(path))
-    for app_name in ("app", "example"):
+    for app_name in ("app", example_folder):
         if app_name in result:
             result.remove(app_name)
             result.insert(0, app_name)
@@ -167,7 +193,7 @@ def get_next_version(current_version):
     return '{}.{}.{:02d}'.format(elems[0], elems[1], int(elems[2]) + 1)
 
 
-def get_version():
+def get_version(testing):
     check_setup_yaml_exists()
     with open(FILENAME_SETUP_YAML) as f:
         data = yaml.load(f)
@@ -179,8 +205,9 @@ def get_version():
         validate=validate_version
     )
     data['version'] = version
-    with open(FILENAME_SETUP_YAML, 'w') as f:
-        yaml.dump(data, f, default_flow_style=False)
+    if not testing:
+        with open(FILENAME_SETUP_YAML, 'w') as f:
+            yaml.dump(data, f, default_flow_style=False)
     print(green("Release version: {0}".format(version)))
     return version
 
@@ -218,6 +245,9 @@ def validate_version(version):
 
 def write_manifest_in(is_project, packages):
     print(yellow("write MANIFEST.in..."))
+    example_folder = _wildcard_folder('example')
+    if not example_folder:
+        abort("Cannot find a folder starting with the name 'example'")
     folders = [
         'doc_src',
         'docs',
@@ -244,7 +274,7 @@ def write_manifest_in(is_project, packages):
         'include requirements/*.txt',
         'include *.txt',
         '',
-        'prune example/',
+        'prune {}/'.format(example_folder),
     ]
     with open('MANIFEST.in', 'w') as f:
         f.write('\n'.join(content))
@@ -291,6 +321,7 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Topic :: Office/Business :: Scheduling',
     ],
     long_description=get_readme(),

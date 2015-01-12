@@ -1,3 +1,4 @@
+from fabric.api import abort
 from fabric.api import env
 from fabric.api import local
 from fabric.api import task
@@ -20,7 +21,7 @@ from lib.dist.helper import write_setup
 
 
 # env.hosts = ['rs.master', ]
-env.use_ssh_config = True
+# env.use_ssh_config = True
 # Set this to True and the version control checks and tags will be skipped
 TESTING = False
 
@@ -47,7 +48,7 @@ def dist(prefix, pypirc):
     is_project = has_project_package(packages)
     name = get_name()
     check_requirements(is_project, prefix)
-    version = get_version()
+    version = get_version(TESTING)
     write_manifest_in(is_project, packages)
     write_setup(
         name,
