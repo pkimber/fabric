@@ -71,13 +71,24 @@ class BrowserDriver(object):
     def test(self):
         if self.data:
             self._create_browser()
-            # get the home URL
-            self._get(self._site_info.url, 'home')
-            # get the other URLs
-            for item in self.data['urls']:
-                url = '{}{}/'.format(self._site_info.url, item.get(self.URL))
-                title = item.get(self.TITLE)
-                self._get(url, title)
+            urls = self.data['urls']
+            if urls:
+                # get the urls
+                for item in urls:
+                    path = item.get(self.URL)
+                    if path == '/':
+                        path = ''
+                    if not path:
+                        path = ''
+                    sep = '/'
+                    if not path:
+                        sep = ''
+                    url = '{}{}{}'.format(self._site_info.url, path, sep)
+                    title = item.get(self.TITLE)
+                    self._get(url, title)
+            else:
+                # no urls - so get the home URL
+                self._get(self._site_info.url, 'home')
         else:
             print(green("Nothing to test..."))
 
