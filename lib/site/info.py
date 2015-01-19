@@ -111,7 +111,7 @@ class SiteInfo(object):
         with open(os.path.join(self._pillar_folder, 'top.sls'), 'r') as f:
             data = yaml.load(f.read())
             base = data.get('base')
-            for k, v in base.iteritems():
+            for k, v in base.items():
                 if fnmatch.fnmatch(self._server_name, k):
                     for name in v:
                         names = name.split('.')
@@ -124,12 +124,13 @@ class SiteInfo(object):
                                     "Unexpected state: 'sls' file contains more "
                                     "than one key: {}".format(file_name)
                                 )
-                            key = attr.iterkeys().next()
-                            if key in result:
-                                raise TaskError(
-                                    "key '{}' is already contained in 'result'"
-                                    ": {}".format(key, file_name)
-                                )
+                            # will contain no more than one key (see above)
+                            for key in attr.keys():
+                                if key in result:
+                                    raise TaskError(
+                                        "key '{}' is already contained in 'result'"
+                                        ": {}".format(key, file_name)
+                                    )
                             result.update(attr)
         return result
 
@@ -528,6 +529,34 @@ class SiteInfo(object):
 
     def pypirc(self):
         return self._get_pypirc()
+
+    def rsync(self):
+        gpg = self._get_none('gpg')
+        if not gpg:
+            raise TaskError('no gpg information found')
+        rsync = gpg.get('rsync')
+        if not rsync:
+            raise TaskError('no rsync information found in gpg')
+        return rsync
+
+    @property
+    def rsync_gpg_password(self):
+        rsync = self.rsync()
+        key = rsync.get('pass')
+        if not key:
+            raise TaskError('no gpg password found in rsync')
+        return key
+
+    @property
+    def rsync_ssh(self):
+        rsync = self.rsync()
+        server = rsync.get('server')
+        if not server:
+            raise TaskError('no rsync server found in rsync')
+        user = rsync.get('user')
+        if not user:
+            raise TaskError('no rsync user found in rsync')
+        return 'ssh://{}@{}/'.format(user, server)
 
     def server_name(self):
         return self._server_name
