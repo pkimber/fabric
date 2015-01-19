@@ -225,7 +225,7 @@ def create_db(table_space=None):
         with shell_env(**pg_data):
             # 'postgres' user to drop a role
             # run('psql -X {} -U postgres -c "DROP ROLE {};"'.format(
-            #     db_host, env.site_name
+            #     db_host, env.site_info.site_name
             # ))
             # 'postgres' user to create a role
             run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
