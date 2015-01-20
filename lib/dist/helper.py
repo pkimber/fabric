@@ -162,13 +162,14 @@ def get_package_data(packages):
 
 def get_packages():
     print(yellow("get packages..."))
+    excluded_dirs=['.git', '.hg', 'dist', 'templates', 'venv-*']
     example_folder = _wildcard_folder('example')
-    if not example_folder:
-        abort("Cannot find a folder starting with the name 'example'")
+    if example_folder:
+        excluded_dirs.append(example_folder)
     walk = filtered_walk(
         '.',
         included_files=['__init__.py'],
-        excluded_dirs=['.git', '.hg', 'dist', example_folder, 'templates', 'venv-*']
+        excluded_dirs=excluded_dirs,
     )
     result = []
     for path, subdirs, files in walk:
@@ -176,10 +177,13 @@ def get_packages():
             path = path.replace(os.sep, '.').strip('.')
             if path:
                 result.append('{0}'.format(path))
-    for app_name in ("app", example_folder):
-        if app_name in result:
-            result.remove(app_name)
-            result.insert(0, app_name)
+    app_names = ['app']
+    if example_folder:
+        app_names.append(example_folder)
+    for name in app_names:
+        if name in result:
+            result.remove(name)
+            result.insert(0, name)
     return result
 
 
@@ -245,9 +249,6 @@ def validate_version(version):
 
 def write_manifest_in(is_project, packages):
     print(yellow("write MANIFEST.in..."))
-    example_folder = _wildcard_folder('example')
-    if not example_folder:
-        abort("Cannot find a folder starting with the name 'example'")
     folders = [
         'doc_src',
         'docs',
@@ -274,8 +275,12 @@ def write_manifest_in(is_project, packages):
         'include requirements/*.txt',
         'include *.txt',
         '',
-        'prune {}/'.format(example_folder),
     ]
+    example_folder = _wildcard_folder('example')
+    if example_folder:
+        content = content + [
+            'prune {}/'.format(example_folder),
+        ]
     with open('MANIFEST.in', 'w') as f:
         f.write('\n'.join(content))
 
