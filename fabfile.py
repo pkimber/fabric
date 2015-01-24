@@ -28,6 +28,7 @@ from lib.deploy.helper import (
     run_post_deploy_test,
 )
 from lib.dev.folder import get_pillar_folder
+from lib.duplicity import Duplicity
 from lib.manage.command import DjangoCommand
 from lib.server.folder import FolderInfo
 from lib.server.name import (
@@ -284,29 +285,10 @@ def deploy(version):
     run_post_deploy_test(env.site_info)
 
 
-def _duplicity_repo_name(backup_or_files):
-    if backup_or_files in ('backup', 'files'):
-        return '{}{}/{}'.format(
-            env.site_info.rsync_ssh,
-            env.site_info.site_name,
-            backup_or_files,
-        )
-    else:
-        abort(
-            "Only 'backup' and 'files' are valid operations for duplicity "
-            "commands: not '{}'".format(backup_or_files)
-        )
-
-
 @task
-def list(backup_or_files):
-    print(green("list: {} for {}").format(
-        backup_or_files,
-        env.site_info.site_name,
-    ))
-    local('duplicity collection-status {}'.format(
-        _duplicity_repo_name(backup_or_files)
-    ))
+def list_current(backup_or_files):
+    duplicity = Duplicity(env.site_info, backup_or_files)
+    duplicity.list_current()
 
 
 @task
