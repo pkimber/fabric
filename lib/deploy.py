@@ -16,8 +16,8 @@ from fabric.colors import (
 from fabric.contrib.files import exists
 from fabric.contrib.project import rsync_project
 
-from lib.browser.drive import BrowserDriver
-from lib.manage.command import DjangoCommand
+from lib.browser import BrowserDriver
+from lib.command import DjangoCommand
 
 
 env.use_ssh_config = True

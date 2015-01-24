@@ -19,27 +19,27 @@ from fabric.colors import (
 from fabric.context_managers import shell_env
 from fabric.contrib.files import exists
 
-from lib.backup.path import Path
-from lib.deploy.helper import (
+from lib.path import Path
+from lib.deploy import (
     deploy_django,
     deploy_php,
     django_post_deploy,
     link_install_to_live_folder,
     run_post_deploy_test,
 )
-from lib.dev.folder import get_pillar_folder
+from lib.folder import get_pillar_folder
 from lib.duplicity import Duplicity
-from lib.manage.command import DjangoCommand
+from lib.command import DjangoCommand
 from lib.postgres import (
     local_database_exists,
     local_postgres_user_exists,
 )
-from lib.server.folder import FolderInfo
-from lib.server.name import (
+from lib.folder import FolderInfo
+from lib.server import (
     get_server_name_live,
     get_server_name_test,
 )
-from lib.site.info import SiteInfo
+from lib.siteinfo import SiteInfo
 
 
 FILES = 'files'

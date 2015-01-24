@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from lib.drive import BrowserDriver
+from lib.browser import BrowserDriver
 from lib.error import TaskError
 from lib.siteinfo import SiteInfo
 
