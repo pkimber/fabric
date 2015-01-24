@@ -284,6 +284,31 @@ def deploy(version):
     run_post_deploy_test(env.site_info)
 
 
+def _duplicity_repo_name(backup_or_files):
+    if backup_or_files in ('backup', 'files'):
+        return '{}{}/{}'.format(
+            env.site_info.rsync_ssh,
+            env.site_info.site_name,
+            backup_or_files,
+        )
+    else:
+        abort(
+            "Only 'backup' and 'files' are valid operations for duplicity "
+            "commands: not '{}'".format(backup_or_files)
+        )
+
+
+@task
+def list(backup_or_files):
+    print(green("list: {} for {}").format(
+        backup_or_files,
+        env.site_info.site_name,
+    ))
+    local('duplicity collection-status {}'.format(
+        _duplicity_repo_name(backup_or_files)
+    ))
+
+
 @task
 def reindex():
     """ For docs, see https://github.com/pkimber/cloud_docs """
