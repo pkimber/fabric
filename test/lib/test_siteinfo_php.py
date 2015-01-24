@@ -11,14 +11,6 @@ from test.lib.test_siteinfo import (
 
 class TestSiteInfoPhp(unittest.TestCase):
 
-    #def _get_test_cert_folder(self, folder_name):
-    #    module_folder = os.path.dirname(os.path.realpath(__file__))
-    #    return os.path.join(module_folder, folder_name)
-
-    #def _get_test_data_folder(self, folder_name):
-    #    module_folder = os.path.dirname(os.path.realpath(__file__))
-    #    return os.path.join(module_folder, folder_name)
-
     def setUp(self):
         self.site_info = SiteInfo(
             'drop-temp',
