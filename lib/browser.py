@@ -68,7 +68,7 @@ class BrowserDriver(object):
     def _load_sitemap(self):
         result = []
         url = '{}{}'.format(self._site_info.url, 'sitemap.xml')
-        response = requests.get(url)
+        response = requests.get(url, verify=False)
         if response.ok:
             xml = xmltodict.parse(response.text)
             data = xml['urlset']['url']
