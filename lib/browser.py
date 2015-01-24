@@ -1,8 +1,13 @@
+import json
 import os
+import requests
 import yaml
+import xmltodict
 
-from fabric.colors import green
-from fabric.colors import yellow
+from fabric.colors import (
+    green,
+    yellow,
+)
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.wait import TimeoutException
@@ -46,16 +51,32 @@ class BrowserDriver(object):
                     "'{}': {}".format(self.TITLE, file_name)
                 )
 
-    def _get(self, url, title):
+    def _get(self, url, title=None):
         print(yellow(url)),
         self.browser.get(url)
-        self._wait_for_page_to_load(url, title)
-        print(green("OK (found {})".format(title)))
+        if title:
+            self._wait_for_page_to_load(url, title)
+            print(green("  OK (match {})".format(title)))
+        else:
+            print(green("  OK (found {})".format(self.browser.title)))
 
     def _load(self, file_name):
         with open(file_name, 'r') as f:
             data = yaml.load(f)
         return data
+
+    def _load_sitemap(self):
+        result = []
+        url = '{}{}'.format(self._site_info.url, 'sitemap.xml')
+        response = requests.get(url)
+        if response.ok:
+            xml = xmltodict.parse(response.text)
+            data = xml['urlset']['url']
+            for item in data:
+                result.append(item['loc'])
+        else:
+            prompt("No sitemap found: {}".format(url))
+        return result
 
     def _wait_for_page_to_load(self, url, title):
         try:
@@ -91,6 +112,13 @@ class BrowserDriver(object):
                 self._get(self._site_info.url, 'home')
         else:
             print(green("Nothing to test..."))
+
+    def test_sitemap(self):
+        self._create_browser()
+        urls = self._load_sitemap()
+        urls.sort()
+        for url in urls:
+            self._get(url)
 
     def close(self):
         if self.browser:

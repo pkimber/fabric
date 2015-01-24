@@ -75,6 +75,7 @@ def touch_vassal_ini(vassal_ini_file_names):
 def run_post_deploy_test(site_name):
     browser_driver = BrowserDriver(site_name)
     browser_driver.test()
+    browser_driver.test_sitemap()
     browser_driver.close()
 
 
