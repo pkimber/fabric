@@ -30,6 +30,10 @@ from lib.deploy.helper import (
 from lib.dev.folder import get_pillar_folder
 from lib.duplicity import Duplicity
 from lib.manage.command import DjangoCommand
+from lib.postgres import (
+    local_database_exists,
+    local_postgres_user_exists,
+)
 from lib.server.folder import FolderInfo
 from lib.server.name import (
     get_server_name_live,
@@ -40,23 +44,6 @@ from lib.site.info import SiteInfo
 
 FILES = 'files'
 POSTGRES = 'postgres'
-
-
-def _local_database_exists(database_name):
-    import psycopg2
-    conn = psycopg2.connect('dbname={0} user={0}'.format('postgres'))
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM pg_database WHERE datname='{}'".format(database_name))
-    return cursor.fetchone()
-
-
-def _local_postgres_user_exists(database_name):
-    """ Return some data if the user exists, else 'None' """
-    import psycopg2
-    conn = psycopg2.connect('dbname={0} user={0}'.format('postgres'))
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM pg_user WHERE usename = '{0}'".format(database_name))
-    return cursor.fetchone()
 
 
 @task
@@ -86,10 +73,10 @@ def backup_db():
         pass
     else:
         print(green("restore to test database"))
-        if _local_database_exists(path.test_database_name()):
+        if local_database_exists(path.test_database_name()):
             local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(path.test_database_name()))
         local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(path.test_database_name()))
-        if not _local_postgres_user_exists(env.site_info.site_name):
+        if not local_postgres_user_exists(env.site_info.site_name):
             local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(env.site_info.site_name, env.site_info.site_name))
         local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
             path.test_database_name(), path.local_file()), capture=True
