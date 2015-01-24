@@ -47,47 +47,6 @@ POSTGRES = 'postgres'
 
 
 @task
-def backup_db():
-    """For docs, see https://github.com/pkimber/docs"""
-    print(green("Backup '{}'").format(env.site_info.site_name))
-    db_type = 'postgres'
-    if env.site_info.is_mysql():
-        db_type = 'mysql'
-    path = Path(env.site_info.site_name, db_type)
-    run('mkdir -p {0}'.format(path.remote_folder()))
-    if env.site_info.is_mysql():
-        backup = env.site_info.backup()
-        run('mysqldump --host={} --user={} --password={} {} > {}'.format(
-            backup['host'],
-            backup['user'],
-            backup['pass'],
-            backup['name'],
-            path.remote_file(),
-        ))
-    else:
-        run('pg_dump -U postgres {0} -f {1}'.format(
-            env.site_info.site_name, path.remote_file()
-        ))
-    get(path.remote_file(), path.local_file())
-    if env.site_info.is_mysql():
-        pass
-    else:
-        print(green("restore to test database"))
-        if local_database_exists(path.test_database_name()):
-            local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(path.test_database_name()))
-        local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(path.test_database_name()))
-        if not local_postgres_user_exists(env.site_info.site_name):
-            local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(env.site_info.site_name, env.site_info.site_name))
-        local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
-            path.test_database_name(), path.local_file()), capture=True
-        )
-        local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
-            path.test_database_name(), env.site_info.site_name, path.user_name()
-        ))
-        print(green("psql {}").format(path.test_database_name()))
-
-
-@task
 def backup_files():
     """
     To backup the files 'rs.connexionsw' server:
@@ -427,3 +386,47 @@ def ssl():
     sudo('chown www-data:www-data {}'.format(folder_info.ssl_server_key()))
     print(green(folder_info.ssl_server_key()))
     print(yellow("Complete"))
+
+
+# Old code.
+# See 'lib/duplicity.py' for the new code which restores from rsync.net
+#
+# @task
+# def backup_db():
+#     """For docs, see https://github.com/pkimber/docs"""
+#     print(green("Backup '{}'").format(env.site_info.site_name))
+#     db_type = 'postgres'
+#     if env.site_info.is_mysql():
+#         db_type = 'mysql'
+#     path = Path(env.site_info.site_name, db_type)
+#     run('mkdir -p {0}'.format(path.remote_folder()))
+#     if env.site_info.is_mysql():
+#         backup = env.site_info.backup()
+#         run('mysqldump --host={} --user={} --password={} {} > {}'.format(
+#             backup['host'],
+#             backup['user'],
+#             backup['pass'],
+#             backup['name'],
+#             path.remote_file(),
+#         ))
+#     else:
+#         run('pg_dump -U postgres {0} -f {1}'.format(
+#             env.site_info.site_name, path.remote_file()
+#         ))
+#     get(path.remote_file(), path.local_file())
+#     if env.site_info.is_mysql():
+#         pass
+#     else:
+#         print(green("restore to test database"))
+#         if local_database_exists(path.test_database_name()):
+#             local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(path.test_database_name()))
+#         local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(path.test_database_name()))
+#         if not local_postgres_user_exists(env.site_info.site_name):
+#             local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(env.site_info.site_name, env.site_info.site_name))
+#         local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
+#             path.test_database_name(), path.local_file()), capture=True
+#         )
+#         local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
+#             path.test_database_name(), env.site_info.site_name, path.user_name()
+#         ))
+#         print(green("psql {}").format(path.test_database_name()))
