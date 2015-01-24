@@ -1,9 +1,16 @@
 # -*- encoding: utf-8 -*-
+import os
+import shutil
+import tempfile
+
 from fabric.api import (
     abort,
     local,
 )
-from fabric.colors import yellow
+from fabric.colors import (
+    cyan,
+    yellow,
+)
 from fabric.context_managers import shell_env
 
 
@@ -38,6 +45,16 @@ class Duplicity(object):
 
     def restore(self):
         self._heading('restore')
-        restore_to = '/home/patrick/repo/temp/test/'
-        with shell_env(**{'PASSPHRASE': self.site_info.rsync_gpg_password}):
-            local('duplicity restore {} {}'.format(self._repo(), restore_to))
+        try:
+            restore_to = tempfile.mkdtemp()
+            env = {
+                'PASSPHRASE': self.site_info.rsync_gpg_password,
+            }
+            with shell_env(**env):
+                local('duplicity restore {} {}'.format(
+                    self._repo(),
+                    restore_to,
+                ))
+        finally:
+            if os.path.exists(restore_to):
+                shutil.rmtree(restore_to)
