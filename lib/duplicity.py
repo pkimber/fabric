@@ -5,6 +5,10 @@ import shutil
 import tempfile
 
 from datetime import datetime
+from walkdir import (
+    file_paths,
+    filtered_walk,
+)
 
 from fabric.api import (
     abort,
@@ -50,6 +54,37 @@ class Duplicity(object):
         self.backup_or_files = backup_or_files
         self.path = Path(site_info.site_name, file_type)
         self.site_info = site_info
+
+    def _display_backup_not_restored(self, restore_to, sql_file):
+        print
+        count = 0
+        files = file_paths(filtered_walk(restore_to))
+        for item in files:
+            if sql_file == item:
+                pass
+            else:
+                count = count + 1
+                print('{}. {}'.format(count, item))
+        if count:
+            print(yellow(
+                "The {} files listed above were not restored "
+                "(just so you know).".format(count)
+            ))
+            print
+
+    def _display_files_not_restored(self, restore_to):
+        print
+        count = 0
+        files = file_paths(filtered_walk(restore_to))
+        for item in files:
+            count = count + 1
+            print('{}. {}'.format(count, item))
+        if count:
+            print(yellow(
+                "The {} files listed above were not restored "
+                "(just so you know).".format(count)
+            ))
+            print
 
     def _find_sql(self, restore_to):
         result = None
@@ -107,6 +142,7 @@ class Duplicity(object):
             self.path.test_database_name(), self.site_info.site_name, self.path.user_name()
         ))
         print(green("psql {}").format(self.path.test_database_name()))
+        return sql_file
 
     def _remove_file_or_folder(self, file_name):
         if os.path.exists(file_name):
@@ -176,9 +212,14 @@ class Duplicity(object):
             restore_to = tempfile.mkdtemp()
             self._restore(restore_to)
             if self.backup:
-                self._restore_database(restore_to)
-            if self.files:
+                sql_file = self._restore_database(restore_to)
+                self._display_backup_not_restored(restore_to, sql_file)
+            elif self.files:
                 self._restore_files(restore_to)
+                self._display_files_not_restored(restore_to)
+            else:
+                abort("Nothing to do... (this is a problem)")
         finally:
             if os.path.exists(restore_to):
                 shutil.rmtree(restore_to)
+        self._heading('Complete')
