@@ -7,9 +7,9 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.wait import TimeoutException
 
-from lib.dev.folder import get_test_folder
+from lib.folder import get_test_folder
 from lib.error import TaskError
-from lib.site.info import SiteInfo
+from lib.siteinfo import SiteInfo
 
 
 class BrowserDriver(object):

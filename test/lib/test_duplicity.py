@@ -2,7 +2,7 @@
 import os
 
 from lib.duplicity import Duplicity
-from test.lib.helper import get_site_info
+from test.lib.test_siteinfo import get_site_info
 
 
 def test_find_sql():

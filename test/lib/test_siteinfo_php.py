@@ -2,25 +2,29 @@ import os
 import unittest
 
 from lib.error import TaskError
-from lib.site.info import SiteInfo
+from lib.siteinfo import SiteInfo
+from test.lib.test_siteinfo import (
+    get_test_cert_folder,
+    get_test_data_folder,
+)
 
 
 class TestSiteInfoPhp(unittest.TestCase):
 
-    def _get_test_cert_folder(self, folder_name):
-        module_folder = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(module_folder, folder_name)
+    #def _get_test_cert_folder(self, folder_name):
+    #    module_folder = os.path.dirname(os.path.realpath(__file__))
+    #    return os.path.join(module_folder, folder_name)
 
-    def _get_test_data_folder(self, folder_name):
-        module_folder = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(module_folder, folder_name)
+    #def _get_test_data_folder(self, folder_name):
+    #    module_folder = os.path.dirname(os.path.realpath(__file__))
+    #    return os.path.join(module_folder, folder_name)
 
     def setUp(self):
         self.site_info = SiteInfo(
             'drop-temp',
             'hatherleigh_info',
-            self._get_test_data_folder('data_php'),
-            self._get_test_cert_folder('cert')
+            get_test_data_folder('data_php'),
+            get_test_cert_folder('cert')
         )
 
     def test_is_mysql(self):
@@ -51,8 +55,8 @@ class TestSiteInfoPhp(unittest.TestCase):
         site_info = SiteInfo(
             'drop-user',
             'very_long_site_name',
-            self._get_test_data_folder('data_php'),
-            self._get_test_cert_folder('cert')
+            get_test_data_folder('data_php'),
+            get_test_cert_folder('cert')
         )
         with self.assertRaises(TaskError) as cm:
             site_info.db_user()

@@ -2,18 +2,16 @@ import fnmatch
 import os
 import yaml
 
-from lib.dev.folder import (
+from lib.folder import (
     get_certificate_folder,
     get_pillar_folder,
+    SSL_CERT_NAME,
+    SSL_SERVER_KEY,
 )
 from lib.error import (
     SiteNotFoundError,
     TaskError,
 )
-
-
-SSL_CERT_NAME = 'ssl-unified.crt'
-SSL_SERVER_KEY = 'server.key'
 
 
 class SiteInfo(object):

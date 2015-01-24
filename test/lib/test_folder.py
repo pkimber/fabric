@@ -2,21 +2,21 @@ import os
 import unittest
 
 from lib.error import TaskError
-from lib.server.folder import FolderInfo
-from lib.site.info import SiteInfo
+from lib.folder import FolderInfo
+from lib.siteinfo import SiteInfo
 
 
 class TestFolderInfo(unittest.TestCase):
 
     def _site_info(self):
         module_folder = os.path.dirname(os.path.realpath(__file__))
-        folder = os.path.join(module_folder, '..', 'site', 'data')
+        folder = os.path.join(module_folder, 'data', 'sites', 'data')
         folder = os.path.abspath(folder)
         return SiteInfo('drop-temp', 'csw_web', folder)
 
     def _site_info_testing(self):
         module_folder = os.path.dirname(os.path.realpath(__file__))
-        folder = os.path.join(module_folder, '..', 'site', 'data_testing')
+        folder = os.path.join(module_folder, 'data', 'sites', 'data_testing')
         folder = os.path.abspath(folder)
         return SiteInfo('drop-test', 'kb_couk', folder)
 

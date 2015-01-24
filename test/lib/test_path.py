@@ -3,7 +3,7 @@ import unittest
 
 from datetime import datetime
 
-from lib.backup.path import Path
+from lib.path import Path
 from lib.error import TaskError
 
 

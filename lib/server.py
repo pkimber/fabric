@@ -7,7 +7,7 @@ from lib.error import (
     SiteNotFoundError,
     TaskError,
 )
-from lib.site.info import SiteInfo
+from lib.siteinfo import SiteInfo
 
 
 def _get_server_name(pillar_folder, site_name, testing):

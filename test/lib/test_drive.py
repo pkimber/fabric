@@ -1,22 +1,22 @@
 import os
 import unittest
 
-from lib.browser.drive import BrowserDriver
+from lib.drive import BrowserDriver
 from lib.error import TaskError
-from lib.site.info import SiteInfo
+from lib.siteinfo import SiteInfo
 
 
 class TestBrowserDriver(unittest.TestCase):
 
     def _site_info(self, site_name):
         module_folder = os.path.dirname(os.path.realpath(__file__))
-        folder = os.path.join(module_folder, '..', 'site', 'data')
+        folder = os.path.join(module_folder, 'data', 'sites', 'data')
         folder = os.path.abspath(folder)
         return SiteInfo('drop-temp', site_name, folder)
 
     def _test_data_folder(self):
         module_folder = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(module_folder, 'data')
+        return os.path.join(module_folder, 'data', 'drive')
 
     #def test_yaml(self):
     #    import yaml
