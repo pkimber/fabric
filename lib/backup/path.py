@@ -85,6 +85,27 @@ class Path(object):
     def local_file(self):
         return os.path.expanduser(self.remote_file())
 
+    def local_project_folder(self, site_name):
+        return os.path.join(
+            os.path.expanduser('~'),
+            'repo',
+            'dev',
+            'project',
+            site_name,
+        )
+
+    def local_project_folder_media(self, site_name):
+        return os.path.join(
+            self.local_project_folder(site_name),
+            'media',
+        )
+
+    def local_project_folder_media_private(self, site_name):
+        return os.path.join(
+            self.local_project_folder(site_name),
+            'media-private',
+        )
+
     def php_folders(self):
         return [
             'images',

@@ -9,6 +9,7 @@ from datetime import datetime
 from fabric.api import (
     abort,
     local,
+    prompt,
 )
 from fabric.colors import (
     cyan,
@@ -32,7 +33,7 @@ class Duplicity(object):
         if backup_or_files == 'backup':
             self.backup = True
             if site_info.is_postgres():
-                self.db_type = 'postgres'
+                file_type = 'postgres'
             else:
                 abort(
                     "Sorry, this site is not using a 'postgres' database. "
@@ -40,13 +41,14 @@ class Duplicity(object):
                 )
         elif backup_or_files == 'files':
             self.files = True
+            file_type = 'files'
         else:
             abort(
                 "Only 'backup' and 'files' are valid operations for duplicity "
                 "commands (not '{}')".format(backup_or_files)
             )
         self.backup_or_files = backup_or_files
-        self.path = Path(site_info.site_name, self.db_type)
+        self.path = Path(site_info.site_name, file_type)
         self.site_info = site_info
 
     def _find_sql(self, restore_to):
@@ -106,6 +108,45 @@ class Duplicity(object):
         ))
         print(green("psql {}").format(self.path.test_database_name()))
 
+    def _restore_files(self, restore_to):
+        print restore_to
+        print self.path.local_project_folder_media(self.site_info.site_name)
+        temp_public = os.path.join(restore_to, 'public')
+        match = glob.glob('{}/*'.format(temp_public))
+        print match
+        to_remove = []
+        for item in match:
+            project_folder = os.path.join(
+                self.path.local_project_folder_media(self.site_info.site_name),
+                os.path.basename(item),
+            )
+            print project_folder
+            if os.path.exists(project_folder):
+                to_remove.append(project_folder)
+        if to_remove:
+            print
+            for count, item in enumerate(to_remove):
+                print('{}. {}'.format(count + 1, item))
+            confirm = ''
+            while confirm not in ('Y', 'N'):
+                confirm = prompt(
+                    "Are you happy to remove these {} files/folders?".format(
+                        len(to_remove)
+                    ))
+                confirm = confirm.strip().upper()
+            if confirm == 'Y':
+                for item in to_remove:
+                    if os.path.isdir(item):
+                        shutil.rmtree(item)
+                    elif os.path.isfile(item):
+                        os.remove(item)
+                    else:
+                        abort("Is not a file or folder: {}".format(item))
+            else:
+                abort("Cannot restore unless existing files are removed.")
+
+
+
     def list_current(self):
         self._heading('list_current')
         local('duplicity collection-status {}'.format(self._repo()))
@@ -113,10 +154,16 @@ class Duplicity(object):
     def restore(self):
         self._heading('restore')
         try:
-            restore_to = tempfile.mkdtemp()
-            self._restore(restore_to)
+            # Uncomment this when it is all working
+            # restore_to = tempfile.mkdtemp()
+            # self._restore(restore_to)
             if self.backup:
                 self._restore_database(restore_to)
+            if self.files:
+                #self._restore_files(restore_to)
+                self._restore_files('/tmp/tmpSA8G7z')
         finally:
-            if os.path.exists(restore_to):
-                shutil.rmtree(restore_to)
+            # Uncomment this when it is all working
+            #if os.path.exists(restore_to):
+            #    shutil.rmtree(restore_to)
+            pass
