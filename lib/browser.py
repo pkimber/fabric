@@ -75,7 +75,7 @@ class BrowserDriver(object):
             for item in data:
                 result.append(item['loc'])
         else:
-            prompt("No sitemap found: {}".format(url))
+            print(yellow("No sitemap found: {}".format(url), True))
         return result
 
     def _wait_for_page_to_load(self, url, title):
