@@ -1,24 +1,29 @@
-from fabric.api import abort
-from fabric.api import env
-from fabric.api import local
-from fabric.api import task
-from fabric.colors import blue
-from fabric.colors import green
+from fabric.api import (
+    abort,
+    env,
+    local,
+    task,
+)
+from fabric.colors import (
+    blue,
+    green,
+)
 
-from lib.dist.helper import check_is_project_or_app
-from lib.dist.helper import check_requirements
-from lib.dist.helper import check_scm_status
-from lib.dist.helper import commit_and_tag
-from lib.dist.helper import get_description
-from lib.dist.helper import get_name
-from lib.dist.helper import get_package_data
-from lib.dist.helper import get_packages
-from lib.dist.helper import get_scm_config
-from lib.dist.helper import get_version
-from lib.dist.helper import has_project_package
-from lib.dist.helper import write_manifest_in
-from lib.dist.helper import write_setup
-
+from lib.dist import (
+    check_is_project_or_app,
+    check_requirements,
+    check_scm_status,
+    commit_and_tag,
+    get_description,
+    get_name,
+    get_package_data,
+    get_packages,
+    get_scm_config,
+    get_version,
+    has_project_package,
+    write_manifest_in,
+    write_setup,
+)
 
 # env.hosts = ['rs.master', ]
 # env.use_ssh_config = True

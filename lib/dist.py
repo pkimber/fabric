@@ -12,7 +12,8 @@ from fabric.colors import yellow
 from fabric.colors import white
 
 from walkdir import filtered_walk
-from lib.scm.scm import Scm
+from lib.scm import Scm
+
 
 FILENAME_SETUP_YAML = 'setup.yaml'
 
