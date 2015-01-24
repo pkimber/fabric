@@ -144,6 +144,16 @@ class Duplicity(object):
                         abort("Is not a file or folder: {}".format(item))
             else:
                 abort("Cannot restore unless existing files are removed.")
+        # move the files/folders to the project folder
+        for item in match:
+            print(item)
+            project_folder = os.path.join(
+                self.path.local_project_folder_media(self.site_info.site_name),
+                os.path.basename(item),
+            )
+            print('move: {}'.format(item))
+            print('  to: {}'.format(project_folder))
+            shutil.move(item, project_folder)
 
 
 
