@@ -308,6 +308,12 @@ def reindex():
 
 
 @task
+def restore(backup_or_files):
+    duplicity = Duplicity(env.site_info, backup_or_files)
+    duplicity.restore()
+
+
+@task
 def haystack_index_clear(prefix, name):
     """
     e.g:

@@ -3,7 +3,8 @@ from fabric.api import (
     abort,
     local,
 )
-from fabric.colors import green
+from fabric.colors import yellow
+from fabric.context_managers import shell_env
 
 
 class Duplicity(object):
@@ -17,6 +18,13 @@ class Duplicity(object):
         self.backup_or_files = backup_or_files
         self.site_info = site_info
 
+    def _heading(self, command):
+        print(yellow("{}: {} for {}").format(
+            command,
+            self.backup_or_files,
+            self.site_info.site_name,
+        ))
+
     def _repo(self):
         return '{}{}/{}'.format(
             self.site_info.rsync_ssh,
@@ -25,8 +33,11 @@ class Duplicity(object):
         )
 
     def list_current(self):
-        print(green("list: {} for {}").format(
-            self.backup_or_files,
-            self.site_info.site_name,
-        ))
+        self._heading('list_current')
         local('duplicity collection-status {}'.format(self._repo()))
+
+    def restore(self):
+        self._heading('restore')
+        restore_to = '/home/patrick/repo/temp/test/'
+        with shell_env(**{'PASSPHRASE': self.site_info.rsync_gpg_password}):
+            local('duplicity restore {} {}'.format(self._repo(), restore_to))
