@@ -108,54 +108,63 @@ class Duplicity(object):
         ))
         print(green("psql {}").format(self.path.test_database_name()))
 
-    def _restore_files(self, restore_to):
-        print restore_to
-        print self.path.local_project_folder_media(self.site_info.site_name)
-        temp_public = os.path.join(restore_to, 'public')
-        match = glob.glob('{}/*'.format(temp_public))
-        print match
-        to_remove = []
-        for item in match:
-            project_folder = os.path.join(
-                self.path.local_project_folder_media(self.site_info.site_name),
-                os.path.basename(item),
-            )
-            print project_folder
-            if os.path.exists(project_folder):
-                to_remove.append(project_folder)
-        if to_remove:
-            print
-            for count, item in enumerate(to_remove):
-                print('{}. {}'.format(count + 1, item))
+    def _remove_file_or_folder(self, file_name):
+        if os.path.exists(file_name):
+            if os.path.isdir(file_name):
+                shutil.rmtree(file_name)
+            elif os.path.isfile(file_name):
+                os.remove(file_name)
+            else:
+                abort("Is not a file or folder: {}".format(file_name))
+
+    def _remove_files_folders(self, from_to):
+        count = 0
+        print
+        for ignore, to_file in from_to:
+            if os.path.exists(to_file):
+                count = count + 1
+                print('{}. {}'.format(count, to_file))
+        if count:
             confirm = ''
             while confirm not in ('Y', 'N'):
                 confirm = prompt(
                     "Are you happy to remove these {} files/folders?".format(
-                        len(to_remove)
+                        count
                     ))
                 confirm = confirm.strip().upper()
             if confirm == 'Y':
-                for item in to_remove:
-                    if os.path.isdir(item):
-                        shutil.rmtree(item)
-                    elif os.path.isfile(item):
-                        os.remove(item)
-                    else:
-                        abort("Is not a file or folder: {}".format(item))
+                for ignore, to_file in from_to:
+                    self._remove_file_or_folder(to_file)
             else:
                 abort("Cannot restore unless existing files are removed.")
-        # move the files/folders to the project folder
+        else:
+            print("No files or folders to remove from the project folder.")
+
+    def _get_from_to(self, temp_folder, project_folder):
+        result = []
+        match = glob.glob('{}/*'.format(temp_folder))
         for item in match:
-            print(item)
             project_folder = os.path.join(
-                self.path.local_project_folder_media(self.site_info.site_name),
+                project_folder,
                 os.path.basename(item),
             )
-            print('move: {}'.format(item))
-            print('  to: {}'.format(project_folder))
-            shutil.move(item, project_folder)
+            result.append((item, project_folder))
+        return result
 
-
+    def _restore_files(self, restore_to):
+        from_to = self._get_from_to(
+            os.path.join(restore_to, 'public'),
+            self.path.local_project_folder_media(self.site_info.site_name),
+        )
+        from_to = from_to + self._get_from_to(
+            os.path.join(restore_to, 'private'),
+            self.path.local_project_folder_media_private(self.site_info.site_name),
+        )
+        print from_to
+        self._remove_files_folders(from_to)
+        # move the files/folders to the project folder
+        for from_file, to_file in from_to:
+            shutil.move(from_file, to_file)
 
     def list_current(self):
         self._heading('list_current')
@@ -164,16 +173,12 @@ class Duplicity(object):
     def restore(self):
         self._heading('restore')
         try:
-            # Uncomment this when it is all working
-            # restore_to = tempfile.mkdtemp()
-            # self._restore(restore_to)
+            restore_to = tempfile.mkdtemp()
+            self._restore(restore_to)
             if self.backup:
                 self._restore_database(restore_to)
             if self.files:
-                #self._restore_files(restore_to)
-                self._restore_files('/tmp/tmpSA8G7z')
+                self._restore_files(restore_to)
         finally:
-            # Uncomment this when it is all working
-            #if os.path.exists(restore_to):
-            #    shutil.rmtree(restore_to)
-            pass
+            if os.path.exists(restore_to):
+                shutil.rmtree(restore_to)
