@@ -139,24 +139,14 @@ class Duplicity(object):
         if local_database_exists(database_name):
             drop_local_database(database_name)
         local_database_create(database_name)
-
-
-        #local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(self.path.test_database_name()))
         if not local_user_exists(self.site_info):
             local_user_create(self.site_info)
-            #local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(self.site_info.site_name, self.site_info.site_name))
         local_load_file(database_name, sql_file)
-        #local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
-        #    self.path.test_database_name(), sql_file), capture=True
-        #)
         local_reassign_owner(
             database_name,
             self.site_info.site_name,
             self.path.user_name()
         )
-        #local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
-        #    self.path.test_database_name(), self.site_info.site_name, self.path.user_name()
-        #))
         print(green("psql {}").format(database_name))
         return sql_file
 
