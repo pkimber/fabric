@@ -36,10 +36,32 @@ def _result_true_or_false(out):
         raise TaskError(message)
 
 
+def _sql_user_create(user_name, password):
+    return (
+        "CREATE ROLE {} WITH PASSWORD '{}' "
+        "NOSUPERUSER CREATEDB NOCREATEROLE LOGIN".format(user_name, password)
+    )
+
+
+def _sql_database_create(database_name, table_space):
+    parameter = ''
+    if table_space:
+        print(yellow("using block storage - table space: {}".format(table_space)))
+        parameter = 'TABLESPACE={}'.format(table_space)
+    return (
+        "CREATE DATABASE {} "
+        "TEMPLATE=template0 ENCODING='utf-8' {};".format(database_name, parameter)
+    )
+
+
 def _sql_database_exists(database_name):
     return "SELECT COUNT(*) FROM pg_database WHERE datname='{}'".format(
         database_name
     )
+
+
+def _sql_database_owner(database_name, user_name):
+    return "ALTER DATABASE {} OWNER TO {}".format(database_name, user_name)
 
 
 def _sql_drop_database(database_name):
@@ -65,6 +87,10 @@ def _run_local(sql):
 
 
 def _run_remote(site_info, sql):
+    """Run a remote command as the 'postgres' user.
+
+    We need the 'postgres' user to create a role or database.
+    """
     pg_data = _pg_data_postgres(site_info)
     with shell_env(**pg_data):
         result = run('psql -X {} -U postgres -t -A -c "{}"'.format(
@@ -75,6 +101,10 @@ def _run_remote(site_info, sql):
 
 
 def _run_remote_as_user(site_info, sql):
+    """Run a remote command as the user of the database.
+
+    We need to log into the database as the owner to delete the database.
+    """
     pg_data = _pg_data_database(site_info)
     with shell_env(**pg_data):
         result = run('psql -X {} -U {} -d postgres -t -A -c "{}"'.format(
@@ -105,10 +135,23 @@ def local_user_exists(database_name):
     return _result_true_or_false(result)
 
 
+def remote_database_create(site_info, table_space):
+    sql = _sql_database_create(site_info.db_name, table_space)
+    _run_remote(site_info, sql)
+    # amazon rds the 'postgres' user sets the owner (after the database is created)
+    sql = _sql_database_owner(site_info.db_name, site_info.site_name)
+    _run_remote(site_info, sql)
+
+
 def remote_database_exists(site_info):
     sql = _sql_database_exists(site_info.db_name)
     result = _run_remote(site_info, sql)
     return _result_true_or_false(result)
+
+
+def remote_user_create(site_info):
+    sql = _sql_user_create(site_info.site_name, site_info.db_pass)
+    _run_remote(site_info, sql)
 
 
 def remote_user_exists(site_info):

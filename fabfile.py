@@ -40,7 +40,9 @@ from lib.postgres import (
     drop_remote_user,
     local_database_exists,
     local_user_exists,
+    remote_database_create,
     remote_database_exists,
+    remote_user_create,
     remote_user_exists,
 )
 from lib.folder import FolderInfo
@@ -160,35 +162,32 @@ def create_db(table_space=None):
         )
         run('mysql -u root -e "{}"'.format(command), shell=False)
     else:
-        # log into the 'postgres' database as the owner to delete the database.
-        # pg_data = {}
-        # if env.site_info.db_pass:
-        #     pg_data.update(dict(PGPASSWORD=env.site_info.db_pass))
-        # with shell_env(**pg_data):
-        #     run('psql -X {} -U {} -d postgres -c "DROP DATABASE {};"'.format(
-        #         env.site_info.db_host, env.site_info.site_name, database_name
-        #     ))
-        pg_data = {}
-        if env.site_info.postgres_pass:
-            pg_data.update(dict(PGPASSWORD=env.site_info.postgres_pass))
-        with shell_env(**pg_data):
-            if not remote_user_exists(env.site_info.db_host, env.site_info.site_name):
-                # 'postgres' user to create a role
-                run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
-                    env.site_info.db_host, env.site_info.site_name, env.site_info.db_pass
-                    ))
-            parameter = ''
-            if table_space:
-                print(yellow("using block storage, table space {}...".format(table_space)))
-                parameter = 'TABLESPACE={}'.format(table_space)
-            # 'postgres' user to create a database
-            run('psql -X {} -U postgres -c "CREATE DATABASE {} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
-                env.site_info.db_host, database_name, parameter,
-                ))
-            # amazon rds the 'postgres' user sets the owner (after the database is created)
-            run('psql -X {} -U postgres -c "ALTER DATABASE {} OWNER TO {};"'.format(
-                env.site_info.db_host, database_name, env.site_info.site_name,
-                ))
+        if not remote_user_exists(env.site_info):
+            remote_user_create(env.site_info)
+        remote_database_create(env.site_info, table_space)
+        #pg_data = {}
+        #if env.site_info.postgres_pass:
+        #    pg_data.update(dict(PGPASSWORD=env.site_info.postgres_pass))
+        #with shell_env(**pg_data):
+        #    if not remote_user_exists(env.site_info):
+        #        remote_user_create(env.site_info)
+        #        # 'postgres' user to create a role
+        #        #run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
+        #        #    env.site_info.db_host, env.site_info.site_name, env.site_info.db_pass
+        #        #    ))
+        #    remote_database_create(env.site_info, table_space)
+        #    #parameter = ''
+        #    #if table_space:
+        #    #    print(yellow("using block storage, table space {}...".format(table_space)))
+        #    #    parameter = 'TABLESPACE={}'.format(table_space)
+        #    ## 'postgres' user to create a database
+        #    #run('psql -X {} -U postgres -c "CREATE DATABASE {} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
+        #    #    env.site_info.db_host, database_name, parameter,
+        #    #    ))
+        #    ## amazon rds the 'postgres' user sets the owner (after the database is created)
+        #    #run('psql -X {} -U postgres -c "ALTER DATABASE {} OWNER TO {};"'.format(
+        #    #    env.site_info.db_host, database_name, env.site_info.site_name,
+        #    #    ))
     print(green('done'))
 
 
