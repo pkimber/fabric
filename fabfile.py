@@ -119,20 +119,16 @@ def backup_php_site(server_name, site_name):
 
 @task
 def create_db(table_space=None):
-    """
+    """Create a database.
+
+    e.g:
+    fab test:hatherleigh_info create_db
+
     Note: table space 'cbs' is the name we have given to the Rackspace Cloud
-    Block Storage volume.
-    If you are not using cloud block storage, then don't use the
-    ``table_space`` parameter.
+    Block Storage volume.  If you are not using cloud block storage, then don't
+    use the 'table_space' parameter e.g:
 
-    e.g.
-    fab -H drop-temp create_db:prefix=pkimber,site_name=hatherleigh_net,table_space=
-
-    # if your would like to specify a Postgres table space name
-    fab -H drop-temp create_db:prefix=pkimber,site_name=hatherleigh_net,table_space=cbs
-
-    psql parameters:
-    -X  Do not read the start-up file
+    fab test:hatherleigh_info create_db:cbs
     """
     print(green("create '{}' database on '{}'").format(
         env.site_info.db_name, env.host_string
@@ -165,40 +161,7 @@ def create_db(table_space=None):
         if not remote_user_exists(env.site_info):
             remote_user_create(env.site_info)
         remote_database_create(env.site_info, table_space)
-        #pg_data = {}
-        #if env.site_info.postgres_pass:
-        #    pg_data.update(dict(PGPASSWORD=env.site_info.postgres_pass))
-        #with shell_env(**pg_data):
-        #    if not remote_user_exists(env.site_info):
-        #        remote_user_create(env.site_info)
-        #        # 'postgres' user to create a role
-        #        #run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
-        #        #    env.site_info.db_host, env.site_info.site_name, env.site_info.db_pass
-        #        #    ))
-        #    remote_database_create(env.site_info, table_space)
-        #    #parameter = ''
-        #    #if table_space:
-        #    #    print(yellow("using block storage, table space {}...".format(table_space)))
-        #    #    parameter = 'TABLESPACE={}'.format(table_space)
-        #    ## 'postgres' user to create a database
-        #    #run('psql -X {} -U postgres -c "CREATE DATABASE {} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
-        #    #    env.site_info.db_host, database_name, parameter,
-        #    #    ))
-        #    ## amazon rds the 'postgres' user sets the owner (after the database is created)
-        #    #run('psql -X {} -U postgres -c "ALTER DATABASE {} OWNER TO {};"'.format(
-        #    #    env.site_info.db_host, database_name, env.site_info.site_name,
-        #    #    ))
     print(green('done'))
-
-
-@task
-def db_version():
-    """
-    To find the Postgres version install on 'rs.db':
-    fab -H rs.db db_version
-    """
-    print(green("Postgres version installed on '{0}'").format(env.host_string))
-    run('psql -X -U postgres -c "SELECT VERSION();"')
 
 
 @task
@@ -231,6 +194,11 @@ def deploy(version):
 
 @task
 def drop_db(date_check=None):
+    """Drop a database.
+
+    You will need to enter the current date and time e.g:
+    fab test:hatherleigh_info drop_db:02/02/2015-16:54
+    """
     check = datetime.now().strftime('%d/%m/%Y-%H:%M')
     print(green("drop '{}' database on '{}'").format(
         env.site_info.db_name, env.host_string
@@ -459,3 +427,14 @@ def ssl():
 #             path.test_database_name(), env.site_info.site_name, path.user_name()
 #         ))
 #         print(green("psql {}").format(path.test_database_name()))
+#
+# @task
+# def db_version():
+#     """
+#     To find the Postgres version install on 'rs.db':
+#     fab -H rs.db db_version
+#     """
+#     print(green("Postgres version installed on '{0}'").format(env.host_string))
+#     run('psql -X -U postgres -c "SELECT VERSION();"')
+
+
