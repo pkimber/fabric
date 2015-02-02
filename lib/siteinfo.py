@@ -422,6 +422,14 @@ class SiteInfo(object):
             raise TaskError('no ip for non-postgres database')
 
     @property
+    def db_name(self):
+        if self.is_testing:
+            result = '{}_test'.format(self.site_name)
+        else:
+            result = self.site_name
+        return result
+
+    @property
     def db_pass(self):
         return self._get_setting('db_pass')
 

@@ -25,7 +25,7 @@ from fabric.context_managers import shell_env
 from lib.path import Path
 from lib.postgres import (
     local_database_exists,
-    local_postgres_user_exists,
+    local_user_exists,
 )
 
 

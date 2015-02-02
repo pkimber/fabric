@@ -71,6 +71,24 @@ class TestSiteInfo(unittest.TestCase):
             cm.exception.value
         )
 
+    def test_db_host(self):
+        self.assertEquals('10.11.10.10', get_site_info().db_host)
+
+    def test_db_name(self):
+        assert get_site_info().db_name == 'csw_web'
+
+    def test_db_name_test(self):
+        info = SiteInfo(
+            'drop-test',
+            'kb_couk',
+            get_test_data_folder('data_testing'),
+            get_test_cert_folder('cert')
+        )
+        assert info.db_name == 'kb_couk_test'
+
+    def test_db_pass(self):
+        self.assertIn('myPassword', get_site_info().db_pass)
+
     def test_has_database(self):
         site_info = SiteInfo(
             'drop-temp',
@@ -118,12 +136,6 @@ class TestSiteInfo(unittest.TestCase):
                 get_test_cert_folder('cert')
             )
         self.assertIn('does not have a database type', cm.exception.value)
-
-    def test_db_host(self):
-        self.assertEquals('10.11.10.10', get_site_info().db_host)
-
-    def test_db_pass(self):
-        self.assertIn('myPassword', get_site_info().db_pass)
 
     def test_domain(self):
         self.assertIn('westcountrycoders.co.uk', get_site_info().domain)

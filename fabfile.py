@@ -1,3 +1,7 @@
+# -*- encoding: utf-8 -*-
+
+from datetime import datetime
+
 from fabric.api import (
     abort,
     cd,
@@ -14,6 +18,7 @@ from fabric.api import (
 from fabric.colors import (
     cyan,
     green,
+    red,
     yellow,
 )
 from fabric.context_managers import shell_env
@@ -31,8 +36,12 @@ from lib.folder import get_pillar_folder
 from lib.duplicity import Duplicity
 from lib.command import DjangoCommand
 from lib.postgres import (
+    drop_remote_database,
+    drop_remote_user,
     local_database_exists,
-    local_postgres_user_exists,
+    local_user_exists,
+    remote_database_exists,
+    remote_user_exists,
 )
 from lib.folder import FolderInfo
 from lib.server import (
@@ -123,12 +132,8 @@ def create_db(table_space=None):
     psql parameters:
     -X  Do not read the start-up file
     """
-    if env.site_info.is_testing:
-        database_name = '{}_test'.format(env.site_info.site_name)
-    else:
-        database_name = env.site_info.site_name
     print(green("create '{}' database on '{}'").format(
-        database_name, env.host_string
+        env.site_info.db_name, env.host_string
     ))
     if env.site_info.is_mysql():
         # TODO
@@ -155,40 +160,34 @@ def create_db(table_space=None):
         )
         run('mysql -u root -e "{}"'.format(command), shell=False)
     else:
-        db_host = env.site_info.db_host
-        if db_host:
-            db_host = ' --host={} '.format(db_host)
         # log into the 'postgres' database as the owner to delete the database.
         # pg_data = {}
         # if env.site_info.db_pass:
         #     pg_data.update(dict(PGPASSWORD=env.site_info.db_pass))
         # with shell_env(**pg_data):
         #     run('psql -X {} -U {} -d postgres -c "DROP DATABASE {};"'.format(
-        #         db_host, env.site_info.site_name, database_name
+        #         env.site_info.db_host, env.site_info.site_name, database_name
         #     ))
         pg_data = {}
         if env.site_info.postgres_pass:
             pg_data.update(dict(PGPASSWORD=env.site_info.postgres_pass))
         with shell_env(**pg_data):
-            # 'postgres' user to drop a role
-            # run('psql -X {} -U postgres -c "DROP ROLE {};"'.format(
-            #     db_host, env.site_info.site_name
-            # ))
-            # 'postgres' user to create a role
-            run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
-                db_host, env.site_info.site_name, env.site_info.db_pass
-                ))
+            if not remote_user_exists(env.site_info.db_host, env.site_info.site_name):
+                # 'postgres' user to create a role
+                run('psql -X {} -U postgres -c "CREATE ROLE {} WITH PASSWORD \'{}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(
+                    env.site_info.db_host, env.site_info.site_name, env.site_info.db_pass
+                    ))
             parameter = ''
             if table_space:
                 print(yellow("using block storage, table space {}...".format(table_space)))
                 parameter = 'TABLESPACE={}'.format(table_space)
             # 'postgres' user to create a database
             run('psql -X {} -U postgres -c "CREATE DATABASE {} TEMPLATE=template0 ENCODING=\'utf-8\' {};"'.format(
-                db_host, database_name, parameter,
+                env.site_info.db_host, database_name, parameter,
                 ))
             # amazon rds the 'postgres' user sets the owner (after the database is created)
             run('psql -X {} -U postgres -c "ALTER DATABASE {} OWNER TO {};"'.format(
-                db_host, database_name, env.site_info.site_name,
+                env.site_info.db_host, database_name, env.site_info.site_name,
                 ))
     print(green('done'))
 
@@ -230,6 +229,37 @@ def deploy(version):
     # Post deploy
     run_post_deploy_test(env.site_info)
 
+
+@task
+def drop_db(date_check=None):
+    check = datetime.now().strftime('%d/%m/%Y-%H:%M')
+    print(green("drop '{}' database on '{}'").format(
+        env.site_info.db_name, env.host_string
+    ))
+    if check == date_check:
+        message = "Are you sure you want to drop '{}' on '{}'?".format(
+            env.site_info.db_name, env.host_string
+        )
+        confirm = prompt(
+            "To drop the database, enter the name of the current month?"
+        )
+        check = datetime.now().strftime('%B')
+        if not confirm == check:
+            abort("exit... (the current month is '{}')".format(check))
+        confirm = prompt("Are you sure you want to drop the database (Y/N)?")
+        if confirm == 'Y':
+            print('deleting...')
+            if remote_database_exists(env.site_info):
+                drop_remote_database(env.site_info)
+            if remote_user_exists(env.site_info):
+                drop_remote_user(env.site_info)
+        else:
+            abort("exit... (you did not enter 'Y' to drop the database)")
+    else:
+        print(
+            "You cannot drop a database unless you enter the current date and "
+            "time as a parameter e.g:\ndrop_db:{}".format(check)
+        )
 
 @task
 def list_current(backup_or_files):
