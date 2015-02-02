@@ -86,7 +86,7 @@ class SiteInfo(object):
             raise TaskError("No '{}' setting for site".format(key))
         return site.get(key)
 
-    def _is_postgres(self):
+    def _is_postgres_server(self):
         """do any of the sites use postgres"""
         result = False
         sites = self._get('sites')
@@ -256,32 +256,39 @@ class SiteInfo(object):
                 )
 
     def _verify_database_settings(self):
-        has_mysql = False
-        has_postgres = False
+        server_has_mysql = False
+        server_has_postgres = False
         sites = self._get('sites')
         for name, settings in sites.items():
-            if 'db_pass' not in settings:
-                raise TaskError(
-                    "site '{}' does not have a database "
-                    "password".format(name)
-                )
+            site_has_mysql = False
+            site_has_postgres = False
             if 'db_type' not in settings:
                 raise TaskError(
                     "site '{}' does not have a database "
                     "type".format(name)
                 )
             if settings['db_type'] == 'mysql':
-                has_mysql = True
+                server_has_mysql = True
+                site_has_mysql = True
             elif settings['db_type'] == 'psql':
-                has_postgres = True
+                server_has_postgres = True
+                site_has_postgres = True
+            elif settings['db_type'] == 'None':
+                pass
             else:
                 raise TaskError(
                     "site '{}' has an unknown database "
                     "type: {}".format(name, settings['db_type'])
                 )
-        if has_mysql:
+            if site_has_postgres or site_has_mysql:
+                if 'db_pass' not in settings:
+                    raise TaskError(
+                        "site '{}' does not have a database "
+                        "password".format(name)
+                    )
+        if server_has_mysql:
             self._verify_database_settings_mysql()
-        if has_postgres:
+        if server_has_postgres:
             self._verify_database_settings_postgres()
 
     def _verify_database_settings_mysql(self):
@@ -350,8 +357,7 @@ class SiteInfo(object):
         self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):
-        """
-        Return a dict suitable for use with the fabric 'shell_env' command
+        """Return a dict suitable for use with the fabric 'shell_env' command.
 
         Note: The mailgun data and secret key are not needed when running
         Django 'manage.py' tasks, so don't bother to get the information.
@@ -363,11 +369,8 @@ class SiteInfo(object):
         'generate_secret_key' command from 'django-extensions' until you get
         one without the '$' character.
         """
-
         result = {
             'ALLOWED_HOSTS': self.domain,
-            'DB_IP': self.db_host,
-            'DB_PASS': self.db_pass,
             'DEFAULT_FROM_EMAIL': 'test@pkimber.net',
             'DOMAIN': self.domain,
             'FTP_STATIC_DIR': 'z1',
@@ -386,6 +389,11 @@ class SiteInfo(object):
             'STRIPE_SECRET_KEY': 'vwx',
             'TESTING': str(self.is_testing),
         }
+        if self.has_database:
+            result.update({
+                'DB_IP': self.db_host,
+                'DB_PASS': self.db_pass,
+            })
         if self.is_amazon:
             amazon = self._get('amazon')
             result.update({
@@ -403,7 +411,7 @@ class SiteInfo(object):
 
     @property
     def db_host(self):
-        if self._is_postgres():
+        if self._is_postgres_server():
             settings = self._get('postgres_settings')
             listen_address = settings['listen_address']
             if listen_address == 'localhost':
@@ -511,12 +519,27 @@ class SiteInfo(object):
     #        result = mail[self.MAIL_TEMPLATE_TYPE]
     #    return result
 
+    @property
+    def has_database(self):
+        db_type = self._get_setting('db_type')
+        if db_type in ('psql', 'mysql'):
+            result = True
+        elif db_type == 'None':
+            result = False
+        else:
+            # this should already be checked in '_verify_database_settings'
+            raise TaskError(
+                "site '{}' has an unknown database "
+                "type: {}".format(self._site_name, db_type)
+            )
+        return result
+
     def packages(self):
         return self._get_setting('packages')
 
     @property
     def postgres_pass(self):
-        if self._is_postgres():
+        if self._is_postgres_server():
             settings = self._get('postgres_settings')
             return settings.get('postgres_pass')
         else:

@@ -10,6 +10,7 @@ sites:
     uwsgi_port: '3031'
   csw_mail:
     profile: django
+    db_type: psql
     domain: westcountrycycles.co.uk
     secret_key: 'def'
     ssl: True

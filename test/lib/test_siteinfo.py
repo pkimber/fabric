@@ -71,6 +71,24 @@ class TestSiteInfo(unittest.TestCase):
             cm.exception.value
         )
 
+    def test_has_database(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'csw_web',
+            get_test_data_folder('data'),
+            get_test_cert_folder('cert')
+        )
+        assert site_info.has_database
+
+    def test_has_database_not(self):
+        site_info = SiteInfo(
+            'drop-temp',
+            'test_nodb',
+            get_test_data_folder('data'),
+            get_test_cert_folder('cert')
+        )
+        assert not site_info.has_database
+
     def test_database_password_missing(self):
         with self.assertRaises(TaskError) as cm:
             SiteInfo(

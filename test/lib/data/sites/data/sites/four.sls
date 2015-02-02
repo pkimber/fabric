@@ -32,3 +32,10 @@ sites:
     uwsgi_port: '3033'
     mail:
       mail_template_type: mandrill
+  test_nodb:
+    profile: django
+    db_type: None
+    domain: westcountrycycles.co.uk
+    secret_key: 'def'
+    ssl: True
+    uwsgi_port: '3034'
