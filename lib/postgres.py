@@ -1,6 +1,9 @@
 # -*- encoding: utf-8 -*-
 
-from fabric.api import run
+from fabric.api import (
+    local,
+    run,
+)
 from fabric.context_managers import shell_env
 
 from lib.error import TaskError
@@ -11,6 +14,7 @@ def _db_host(site_info):
     if site_info.db_host:
         result = ' --host={} '.format(site_info.db_host)
     return result
+
 
 def _pg_data_database(site_info):
     result = {}
@@ -74,13 +78,24 @@ def _sql_drop_user(user_name):
     return "DROP ROLE {}".format(user_name)
 
 
+def _sql_reassign_owner(from_user_name, to_user_name):
+    return "REASSIGN OWNED BY {} TO {}".format(from_user_name, to_user_name)
+
+
 def _sql_user_exists(user_name):
     return "SELECT COUNT(*) FROM pg_user WHERE usename = '{}'".format(
         user_name
     )
 
 
-def _run_local(sql):
+def _run_local(sql, database_name=None):
+    database = ''
+    if database_name:
+        database = '-d {}'.format(database_name)
+    local('psql -X -U postgres {} -c "{}"'.format(database, sql))
+
+
+def _run_local_psycopg2(sql):
     import psycopg2
     conn = psycopg2.connect('dbname={0} user={0}'.format('postgres'))
     cursor = conn.cursor()
@@ -117,6 +132,11 @@ def _run_remote_as_user(site_info, sql):
     return result
 
 
+def drop_local_database(database_name):
+    sql = _sql_drop_database(database_name)
+    _run_local(sql)
+
+
 def drop_remote_database(site_info):
     sql = _sql_drop_database(site_info.db_name)
     _run_remote_as_user(site_info, sql)
@@ -127,15 +147,40 @@ def drop_remote_user(site_info):
     _run_remote(site_info, sql)
 
 
+def local_database_create(database_name):
+    sql = _sql_database_create(database_name, None)
+    _run_local(sql)
+
+
 def local_database_exists(database_name):
     sql = _sql_database_exists(database_name)
-    result = _run_local(sql)
+    result = _run_local_psycopg2(sql)
     return _result_true_or_false(result[0])
+
+
+def local_load_file(database_name, file_name):
+    local(
+        "psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
+            database_name,
+            file_name,
+        ),
+        capture=True,
+    )
+
+
+def local_reassign_owner(database_name, from_user_name, to_user_name):
+    sql = _sql_reassign_owner(from_user_name, to_user_name)
+    _run_local(sql, database_name)
+
+
+def local_user_create(site_info):
+    sql = _sql_user_create(site_info.site_name, site_info.site_name)
+    _run_local(sql)
 
 
 def local_user_exists(site_info):
     sql = _sql_user_exists(site_info.site_name)
-    result = _run_local(sql)
+    result = _run_local_psycopg2(sql)
     return _result_true_or_false(result[0])
 
 

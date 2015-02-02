@@ -24,7 +24,12 @@ from fabric.context_managers import shell_env
 
 from lib.path import Path
 from lib.postgres import (
+    drop_local_database,
+    local_database_create,
     local_database_exists,
+    local_load_file,
+    local_reassign_owner,
+    local_user_create,
     local_user_exists,
 )
 
@@ -130,18 +135,29 @@ class Duplicity(object):
     def _restore_database(self, restore_to):
         sql_file = self._find_sql(restore_to)
         print(green("restore to test database: {}".format(sql_file)))
-        if local_database_exists(self.path.test_database_name()):
-            local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(self.path.test_database_name()))
-        local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(self.path.test_database_name()))
+        database_name = self.path.test_database_name()
+        if local_database_exists(database_name):
+            drop_local_database(database_name)
+        local_database_create(database_name)
+
+
+        #local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(self.path.test_database_name()))
         if not local_user_exists(self.site_info):
-            local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(self.site_info.site_name, self.site_info.site_name))
-        local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
-            self.path.test_database_name(), sql_file), capture=True
+            local_user_create(self.site_info)
+            #local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(self.site_info.site_name, self.site_info.site_name))
+        local_load_file(database_name, sql_file)
+        #local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
+        #    self.path.test_database_name(), sql_file), capture=True
+        #)
+        local_reassign_owner(
+            database_name,
+            self.site_info.site_name,
+            self.path.user_name()
         )
-        local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
-            self.path.test_database_name(), self.site_info.site_name, self.path.user_name()
-        ))
-        print(green("psql {}").format(self.path.test_database_name()))
+        #local('psql -X -U postgres -d {} -c "REASSIGN OWNED BY {} TO {}"'.format(
+        #    self.path.test_database_name(), self.site_info.site_name, self.path.user_name()
+        #))
+        print(green("psql {}").format(database_name))
         return sql_file
 
     def _remove_file_or_folder(self, file_name):
