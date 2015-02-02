@@ -27,13 +27,15 @@ def _pg_data_postgres(site_info):
 
 
 def _result_true_or_false(out):
-    if out == '1':
-        return True
-    elif out == '0':
-        return False
+    result = False
+    if int(out) == 1:
+        result = True
+    elif int(out) == 0:
+        result = False
     else:
         message = "Cannot work out if 'local_database_exists': {}".format(out)
         raise TaskError(message)
+    return result
 
 
 def _sql_user_create(user_name, password):
@@ -126,13 +128,15 @@ def drop_remote_user(site_info):
 
 
 def local_database_exists(database_name):
-    _run_local(_sql_database_exists(database_name))
-    return _result_true_or_false(result)
+    sql = _sql_database_exists(database_name)
+    result = _run_local(sql)
+    return _result_true_or_false(result[0])
 
 
-def local_user_exists(database_name):
-    _run_local(_sql_database_exists(database_name))
-    return _result_true_or_false(result)
+def local_user_exists(site_info):
+    sql = _sql_user_exists(site_info.site_name)
+    result = _run_local(sql)
+    return _result_true_or_false(result[0])
 
 
 def remote_database_create(site_info, table_space):

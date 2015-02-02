@@ -133,7 +133,7 @@ class Duplicity(object):
         if local_database_exists(self.path.test_database_name()):
             local('psql -X -U postgres -c "DROP DATABASE {0}"'.format(self.path.test_database_name()))
         local('psql -X -U postgres -c "CREATE DATABASE {0} TEMPLATE=template0 ENCODING=\'utf-8\';"'.format(self.path.test_database_name()))
-        if not local_postgres_user_exists(self.site_info.site_name):
+        if not local_user_exists(self.site_info):
             local('psql -X -U postgres -c "CREATE ROLE {0} WITH PASSWORD \'{1}\' NOSUPERUSER CREATEDB NOCREATEROLE LOGIN;"'.format(self.site_info.site_name, self.site_info.site_name))
         local("psql -X --set ON_ERROR_STOP=on -U postgres -d {0} --file {1}".format(
             self.path.test_database_name(), sql_file), capture=True
