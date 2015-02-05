@@ -273,7 +273,7 @@ class SiteInfo(object):
             elif settings['db_type'] == 'psql':
                 server_has_postgres = True
                 site_has_postgres = True
-            elif settings['db_type'] == 'None':
+            elif settings['db_type'] == '':
                 pass
             else:
                 raise TaskError(
@@ -532,7 +532,7 @@ class SiteInfo(object):
         db_type = self._get_setting('db_type')
         if db_type in ('psql', 'mysql'):
             result = True
-        elif db_type == 'None':
+        elif db_type == '':
             result = False
         else:
             # this should already be checked in '_verify_database_settings'

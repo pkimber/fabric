@@ -34,7 +34,7 @@ sites:
       mail_template_type: mandrill
   test_nodb:
     profile: django
-    db_type: None
+    db_type: ''
     domain: westcountrycycles.co.uk
     secret_key: 'def'
     ssl: True
