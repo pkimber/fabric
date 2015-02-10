@@ -6,16 +6,18 @@ from pkg_resources import safe_name
 
 from fabric.api import abort
 from fabric.api import prompt
-from fabric.colors import cyan
-from fabric.colors import green
-from fabric.colors import yellow
-from fabric.colors import white
-
+from fabric.colors import (
+    cyan,
+    green,
+    yellow,
+    white,
+)
 from walkdir import filtered_walk
 from lib.scm import Scm
 
 
 FILENAME_SETUP_YAML = 'setup.yaml'
+YAPSY_PLUGIN_EXT = 'yapsy-plugin'
 
 
 def _wildcard_folder(prefix):
@@ -277,6 +279,17 @@ def write_manifest_in(is_project, packages):
         'include *.txt',
         '',
     ]
+    # .yapsy-plugin
+    walk = filtered_walk(
+        '.',
+        included_files=['*.{}'.format(YAPSY_PLUGIN_EXT)],
+    )
+    for path, subdirs, files in walk:
+        if files:
+            content = content + [
+                'include {}/*.{}'.format(path[2:], YAPSY_PLUGIN_EXT),
+            ]
+    # example folder
     example_folder = _wildcard_folder('example')
     if example_folder:
         content = content + [
