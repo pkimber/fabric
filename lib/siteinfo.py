@@ -500,12 +500,15 @@ class SiteInfo(object):
         else:
             return False
 
+    @property
     def is_mysql(self):
         return self._get_setting('db_type') == 'mysql'
 
+    @property
     def is_php(self):
         return self._get_setting('profile') == 'php'
 
+    @property
     def is_postgres(self):
         return self._get_setting('db_type') == 'psql'
 

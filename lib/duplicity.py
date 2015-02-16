@@ -41,8 +41,10 @@ class Duplicity(object):
         self.files = False
         if backup_or_files == 'backup':
             self.backup = True
-            if site_info.is_postgres():
+            if site_info.is_postgres:
                 file_type = 'postgres'
+            elif site_info.is_mysql:
+                file_type = 'mysql'
             else:
                 abort(
                     "Sorry, this site is not using a 'postgres' database. "
@@ -135,6 +137,27 @@ class Duplicity(object):
     def _restore_database(self, restore_to):
         sql_file = self._find_sql(restore_to)
         print(green("restore to test database: {}".format(sql_file)))
+        if self.site_info.is_mysql:
+            self._restore_database_mysql(sql_file)
+        elif self.site_info.is_postgres:
+            self._restore_database_postgres(restore_to, sql_file)
+        else:
+            abort("Nothing to do... (this is a problem)")
+        return sql_file
+
+    def _restore_database_mysql(self, sql_file):
+        local_project_folder = self.path.local_project_folder(
+            self.site_info.site_name
+        )
+        to_sql_file = os.path.join(local_project_folder, "mysqldump.sql")
+        from_to = []
+        from_to.append((sql_file, to_sql_file))
+        self._remove_files_folders(from_to)
+        # move the files/folders to the project folder
+        for from_file, to_file in from_to:
+            shutil.move(from_file, to_file)
+
+    def _restore_database_postgres(self, restore_to, sql_file):
         database_name = self.path.test_database_name()
         if local_database_exists(database_name):
             drop_local_database(database_name)
@@ -148,7 +171,6 @@ class Duplicity(object):
             self.path.user_name()
         )
         print(green("psql {}").format(database_name))
-        return sql_file
 
     def _remove_file_or_folder(self, file_name):
         if os.path.exists(file_name):
@@ -195,6 +217,12 @@ class Duplicity(object):
         return result
 
     def _restore_files(self, restore_to):
+        if self.site_info.is_php:
+            self._restore_files_php_site(restore_to)
+        else:
+            self._restore_files_django_site(restore_to)
+
+    def _restore_files_django_site(self, restore_to):
         from_to = self._get_from_to(
             os.path.join(restore_to, 'public'),
             self.path.local_project_folder_media(self.site_info.site_name),
@@ -202,6 +230,16 @@ class Duplicity(object):
         from_to = from_to + self._get_from_to(
             os.path.join(restore_to, 'private'),
             self.path.local_project_folder_media_private(self.site_info.site_name),
+        )
+        self._remove_files_folders(from_to)
+        # move the files/folders to the project folder
+        for from_file, to_file in from_to:
+            shutil.move(from_file, to_file)
+
+    def _restore_files_php_site(self, restore_to):
+        from_to = self._get_from_to(
+            restore_to,
+            self.path.local_project_folder(self.site_info.site_name),
         )
         self._remove_files_folders(from_to)
         # move the files/folders to the project folder
