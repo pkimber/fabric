@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-
 from datetime import datetime
 
 from fabric.api import (
@@ -55,6 +54,7 @@ from lib.siteinfo import SiteInfo
 
 FILES = 'files'
 POSTGRES = 'postgres'
+env.use_ssh_config = False
 
 
 @task
@@ -133,7 +133,7 @@ def create_db(table_space=None):
     print(green("create '{}' database on '{}'").format(
         env.site_info.db_name, env.host_string
     ))
-    if env.site_info.is_mysql():
+    if env.site_info.is_mysql:
         # TODO
         # Note: these commands will not work if the root user has a password!
         # For more information, see:
@@ -180,7 +180,7 @@ def deploy(version):
         run('mkdir {}'.format(folder_info.deploy()))
     run('mkdir {}'.format(folder_info.install()))
     run('mkdir {}'.format(folder_info.install_temp()))
-    if env.site_info.is_php():
+    if env.site_info.is_php:
         deploy_php(folder_info, env.site_info)
     else:
         deploy_django(folder_info, env.site_info, version)
