@@ -445,7 +445,7 @@ class SiteInfo(object):
         result = site.get('db_user')
         if not result:
             result = self._site_name
-        if self.is_mysql() and len(result) > 16:
+        if self.is_mysql and len(result) > 16:
             raise TaskError(
                 "maximum length of user name for mysql is 16 characters:"
                 "{}".format(result)

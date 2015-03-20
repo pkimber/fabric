@@ -20,10 +20,10 @@ class TestSiteInfoPhp(unittest.TestCase):
         )
 
     def test_is_mysql(self):
-        self.assertEquals(True, self.site_info.is_mysql())
+        self.assertEquals(True, self.site_info.is_mysql)
 
     def test_is_php(self):
-        self.assertEquals(True, self.site_info.is_php())
+        self.assertEquals(True, self.site_info.is_php)
 
     def test_packages(self):
         packages = self.site_info.packages()

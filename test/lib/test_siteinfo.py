@@ -261,7 +261,7 @@ class TestSiteInfo(unittest.TestCase):
         self.assertEquals(False, get_site_info().is_ftp())
 
     def test_is_postgres(self):
-        self.assertEquals(True, get_site_info().is_postgres())
+        self.assertEquals(True, get_site_info().is_postgres)
 
     def test_is_testing(self):
         """The pillar uses the same sites for live and testing."""
