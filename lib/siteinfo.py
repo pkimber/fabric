@@ -110,6 +110,7 @@ class SiteInfo(object):
             data = yaml.load(f.read())
             base = data.get('base')
             for k, v in base.items():
+                # unix style file-name match
                 if fnmatch.fnmatch(self._server_name, k):
                     for name in v:
                         names = name.split('.')
@@ -150,7 +151,13 @@ class SiteInfo(object):
     def _verify_profile(self):
         has_django = False
         has_php = False
-        sites = self._get('sites')
+        try:
+            sites = self._get('sites')
+        except TaskError:
+            raise SiteNotFoundError(
+                "pillar has no 'sites' key for server '{}', site '{}'"
+                ".".format(self._server_name, self._site_name)
+            )
         for name, settings in sites.items():
             profile = settings.get('profile', None)
             if profile:

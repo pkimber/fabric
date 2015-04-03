@@ -440,14 +440,14 @@ class TestSiteInfo(unittest.TestCase):
         self.assertTrue(True)
 
     def test_no_sites(self):
-        with self.assertRaises(TaskError) as cm:
+        with self.assertRaises(SiteNotFoundError) as cm:
             SiteInfo(
                 'na',
                 'na',
                 get_test_data_folder('data_sites_do_not_exist'),
                 get_test_cert_folder('cert')
             )
-        self.assertIn("Cannot find 'sites' key", cm.exception.value)
+        self.assertIn("pillar has no 'sites' key", cm.exception.value)
 
     def test_url(self):
         info = get_site_info()
