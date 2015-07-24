@@ -3,6 +3,11 @@ Fabric
 
 .. highlight:: bash
 
+::
+
+  apt-get install python-dev
+  apt-get install duplicity python-paramiko
+
 The documentation for this project can be found at:
 https://github.com/pkimber/docs
 
