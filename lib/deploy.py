@@ -25,10 +25,13 @@ env.use_ssh_config = True
 SECRET_KEY = 'SECRET_KEY'
 
 
-def download_package(site_name, prefix, version, temp_folder):
+def download_package(site_name, prefix, version, temp_folder, venv_folder):
     package_name = '{}-{}=={}'.format(prefix, safe_name(site_name), version)
     print(green("download package: {}".format(package_name)))
-    run('pip install --download={} --no-deps {}'.format(temp_folder, package_name))
+    pip_bin = os.path.join(venv_folder, 'bin', 'pip')
+    run('{} install --download={} --no-deps {}'.format(
+        pip_bin, temp_folder, package_name
+    ))
 
 
 def extract_project_package(install_folder, temp_folder, site_name, prefix, version):
@@ -80,12 +83,15 @@ def run_post_deploy_test(site_name):
 
 
 def deploy_django(folder_info, site_info, version):
+    # virtualenv
+    mkvirtualenv(folder_info.install_venv())
     # download and extract main package
     download_package(
         site_info.site_name,
         site_info.prefix(),
         version,
-        folder_info.install_temp()
+        folder_info.install_temp(),
+        folder_info.install_venv()
     )
     extract_project_package(
         folder_info.install(),
@@ -94,8 +100,6 @@ def deploy_django(folder_info, site_info, version):
         site_info.prefix(),
         version
     )
-    # virtualenv
-    mkvirtualenv(folder_info.install_venv())
     # debug
     run('ls -l {0}'.format(folder_info.install()))
     # requirements
