@@ -36,7 +36,7 @@ class BrowserDriver(object):
 
     def _create_browser(self):
         if not self.browser:
-            self.browser = webdriver.Firefox()  # Get local session of firefox
+            self.browser = webdriver.Chrome()
 
     def _check_urls(self, file_name):
         for item in self.data['urls']:
@@ -111,7 +111,7 @@ class BrowserDriver(object):
                 # no urls - so get the home URL
                 self._get(self._site_info.url, 'home')
         else:
-            print(green("Nothing to test..."))
+            print(green("Nothing to test in the list of URLs..."))
 
     def test_sitemap(self):
         self._create_browser()
