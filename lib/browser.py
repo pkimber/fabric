@@ -59,6 +59,12 @@ class BrowserDriver(object):
             print(green("  OK (match {})".format(title)))
         else:
             print(green("  OK (found {})".format(self.browser.title)))
+        # to find some text on a page
+        # text = self.browser.find_element_by_tag_name('body').text
+        # if '35' in text:
+        #     print(text)
+        #     import ipdb
+        #     ipdb.set_trace()
 
     def _load(self, file_name):
         with open(file_name, 'r') as f:
