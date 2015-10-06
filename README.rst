@@ -35,3 +35,10 @@ Important
 .. important:: ``devpi`` (python ``requests``) on python 2 isn't happy with the
                new SSL certificate on our devpi server.  ``devpi`` with python
                3 is happy - so use ``devpi`` with python 3.
+
+Docker (WIP)
+============
+
+Build the docker image::
+
+  docker build -t myfab .
