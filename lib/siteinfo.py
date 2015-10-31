@@ -598,7 +598,8 @@ class SiteInfo(object):
         user = rsync.get('user')
         if not user:
             raise TaskError('no rsync user found in rsync')
-        return 'ssh://{}@{}/'.format(user, server)
+        # if I change this to 'scp' will it just work?
+        return 'scp://{}@{}/'.format(user, server)
 
     def server_name(self):
         return self._server_name
