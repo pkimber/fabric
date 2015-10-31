@@ -125,7 +125,7 @@ def _run_remote_as_user(site_info, sql):
     with shell_env(**pg_data):
         result = run('psql -X {} -U {} -d postgres -t -A -c "{}"'.format(
             _db_host(site_info),
-            site_info.site_name,
+            site_info.db_name,
             sql,
         ))
     return result
@@ -173,7 +173,7 @@ def local_reassign_owner(database_name, from_user_name, to_user_name):
 
 
 def local_user_create(site_info):
-    sql = _sql_user_create(site_info.site_name, site_info.site_name)
+    sql = _sql_user_create(site_info.db_name, site_info.site_name)
     _run_local(sql)
 
 
@@ -187,7 +187,7 @@ def remote_database_create(site_info, table_space):
     sql = _sql_database_create(site_info.db_name, table_space)
     _run_remote(site_info, sql)
     # amazon rds the 'postgres' user sets the owner (after the database is created)
-    sql = _sql_database_owner(site_info.db_name, site_info.site_name)
+    sql = _sql_database_owner(site_info.db_name, site_info.db_name)
     _run_remote(site_info, sql)
 
 
@@ -198,11 +198,11 @@ def remote_database_exists(site_info):
 
 
 def remote_user_create(site_info):
-    sql = _sql_user_create(site_info.site_name, site_info.db_pass)
+    sql = _sql_user_create(site_info.db_name, site_info.db_pass)
     _run_remote(site_info, sql)
 
 
 def remote_user_exists(site_info):
-    sql = _sql_user_exists(site_info.site_name)
+    sql = _sql_user_exists(site_info.db_name)
     result = _run_remote(site_info, sql)
     return _result_true_or_false(result)

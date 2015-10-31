@@ -165,7 +165,7 @@ def create_db(table_space=None):
 
 
 @task
-def version(version):
+def deploy(version):
     """ For docs, see https://github.com/pkimber/cloud_docs """
     env.user = 'web'
     folder_info = FolderInfo(env.site_info, version)
@@ -304,7 +304,7 @@ def setup(domain):
 
 
 @task
-def deploy(domain):
+def domain(domain):
     """task for running commands on the site."""
     setup(domain)
 

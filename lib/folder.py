@@ -121,7 +121,7 @@ class FolderInfo(object):
             'uwsgi',
             'vassals',
         )
-        site_name = self.site_info.site_name
+        site_name = self.site_info.domain
         result = [os.path.join(folder, '{}.ini'.format(site_name)),]
         if self.site_info.is_celery:
             result.append(

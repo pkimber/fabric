@@ -431,11 +431,7 @@ class SiteInfo(object):
 
     @property
     def db_name(self):
-        if self.is_testing:
-            result = '{}_test'.format(self.site_name)
-        else:
-            result = self.site_name
-        return result
+        return self._domain.replace('.', '_')
 
     @property
     def db_pass(self):
