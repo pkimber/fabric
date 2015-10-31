@@ -265,5 +265,6 @@ class Duplicity(object):
                 abort("Nothing to do... (this is a problem)")
         finally:
             if os.path.exists(restore_to):
-                shutil.rmtree(restore_to)
+                #shutil.rmtree(restore_to)
+                pass
         self._heading('Complete')
