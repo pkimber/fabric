@@ -16,8 +16,8 @@ from lib.error import (
 
 class SiteInfo(object):
 
-    def __init__(self, server_name, domain, pillar_folder=None, certificate_folder=None):
-        self._server_name = server_name
+    def __init__(self, minion_id, domain, pillar_folder=None, certificate_folder=None):
+        self._minion_id = minion_id
         self._domain = domain
         self._pillar_folder = pillar_folder or get_pillar_folder()
         self._pillar = self._load()
@@ -113,7 +113,7 @@ class SiteInfo(object):
             base = data.get('base')
             for k, v in base.items():
                 # unix style file-name match
-                if fnmatch.fnmatch(self._server_name, k):
+                if fnmatch.fnmatch(self._minion_id, k):
                     for name in v:
                         names = name.split('.')
                         file_name = os.path.join(self._pillar_folder, *names)
@@ -158,7 +158,7 @@ class SiteInfo(object):
         except TaskError:
             raise SiteNotFoundError(
                 "pillar has no 'sites' key for server '{}', domain '{}'"
-                ".".format(self._server_name, self._domain)
+                ".".format(self._minion_id, self._domain)
             )
         for name, settings in sites.items():
             profile = settings.get('profile', None)
@@ -585,8 +585,8 @@ class SiteInfo(object):
         # if I change this to 'scp' will it just work?
         return 'scp://{}@{}/'.format(user, server)
 
-    def server_name(self):
-        return self._server_name
+    def minion_id(self):
+        return self._minion_id
 
     @property
     def package(self):

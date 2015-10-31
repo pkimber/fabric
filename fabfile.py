@@ -295,9 +295,9 @@ def setup(domain):
     print(green("domain: {}".format(domain)))
     # find the server name for this site
     pillar_folder = get_pillar_folder()
-    server_name = get_server_name_live(pillar_folder, domain)
-    print(yellow("server_name: {}".format(server_name)))
-    env.site_info = SiteInfo(server_name, domain)
+    minion_id = get_server_name_live(pillar_folder, domain)
+    print(yellow("minion_id: {}".format(minion_id)))
+    env.site_info = SiteInfo(minion_id, domain)
     # Update env.hosts instead of calling execute()
     env.hosts = domain
     print(yellow("env.hosts: {}".format(env.hosts)))

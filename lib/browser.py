@@ -28,7 +28,7 @@ class BrowserDriver(object):
         if not test_folder:
             test_folder = get_test_folder()
         file_name = os.path.join(
-            test_folder, '{}.yaml'.format(self._site_info.site_name)
+            test_folder, '{}.yaml'.format(self._site_info.domain)
         )
         self.data = self._load(file_name)
         if self.data:
