@@ -93,7 +93,7 @@ class FolderInfo(object):
         return os.path.join(
             self._repo(),
             'project',
-            self.site_info.site_name,
+            self.site_info.domain,
         )
 
     def ssl_cert(self):

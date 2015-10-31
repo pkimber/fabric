@@ -165,7 +165,7 @@ def create_db(table_space=None):
 
 
 @task
-def deploy(version):
+def version(version):
     """ For docs, see https://github.com/pkimber/cloud_docs """
     env.user = 'web'
     folder_info = FolderInfo(env.site_info, version)
@@ -291,37 +291,26 @@ def ok():
     run_post_deploy_test(env.site_info)
 
 
-def setup(site_name, testing):
-    print(green("site_name: {}".format(site_name)))
+def setup(domain):
+    print(green("domain: {}".format(domain)))
     # find the server name for this site
     pillar_folder = get_pillar_folder()
-    if testing:
-        print(cyan("testing, testing... ", True))
-        server_name = get_server_name_test(pillar_folder, site_name)
-    else:
-        print(cyan("is ALIVE!", True))
-        server_name = get_server_name_live(pillar_folder, site_name)
+    server_name = get_server_name_live(pillar_folder, domain)
     print(yellow("server_name: {}".format(server_name)))
-    env.site_info = SiteInfo(server_name, site_name)
+    env.site_info = SiteInfo(server_name, domain)
     # Update env.hosts instead of calling execute()
-    env.hosts = env.site_info.domain
+    env.hosts = domain
     print(yellow("env.hosts: {}".format(env.hosts)))
 
 
 @task
-def live(site_name):
-    """task for running commands on the live site."""
-    setup(site_name, False)
+def deploy(domain):
+    """task for running commands on the site."""
+    setup(domain)
 
 
 @task
-def test(site_name):
-    """task for running commands on the test site."""
-    setup(site_name, True)
-
-
-@task
-def version():
+def kernel():
     print(yellow(env.site_name))
     run('uname -r')
 

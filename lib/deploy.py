@@ -87,7 +87,7 @@ def deploy_django(folder_info, site_info, version):
     mkvirtualenv(folder_info.install_venv())
     # download and extract main package
     download_package(
-        site_info.site_name,
+        site_info.package,
         site_info.prefix(),
         version,
         folder_info.install_temp(),
@@ -96,7 +96,7 @@ def deploy_django(folder_info, site_info, version):
     extract_project_package(
         folder_info.install(),
         folder_info.install_temp(),
-        site_info.site_name,
+        site_info.package,
         site_info.prefix(),
         version
     )

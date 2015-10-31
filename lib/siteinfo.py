@@ -16,9 +16,9 @@ from lib.error import (
 
 class SiteInfo(object):
 
-    def __init__(self, server_name, site_name, pillar_folder=None, certificate_folder=None):
+    def __init__(self, server_name, domain, pillar_folder=None, certificate_folder=None):
         self._server_name = server_name
-        self._site_name = site_name
+        self._domain = domain
         self._pillar_folder = pillar_folder or get_pillar_folder()
         self._pillar = self._load()
         if certificate_folder == None:
@@ -32,7 +32,7 @@ class SiteInfo(object):
         self._verify_database_settings()
 
     def _get_media_root(self):
-        return '/home/web/repo/project/{}/files/'.format(self._site_name)
+        return '/home/web/repo/project/{}/files/'.format(self._domain)
 
     def _get(self, key):
         result = self._get_none(key)
@@ -72,18 +72,20 @@ class SiteInfo(object):
 
     def _get_site(self):
         sites = self._get('sites')
-        if self._site_name not in sites:
+        if self._domain not in sites:
             raise SiteNotFoundError(
-                "site '{}' not found in pillar: {}".format(
-                    self._site_name, sites.keys()
+                "domain '{}' not found in pillar: {}".format(
+                    self._domain, sites.keys()
                 )
             )
-        return sites[self._site_name]
+        return sites[self._domain]
 
     def _get_setting(self, key):
         site = self._get_site()
         if key not in site:
-            raise TaskError("No '{}' setting for site".format(key))
+            raise TaskError(
+                "No '{}' setting for site: {}".format(key, site.keys())
+            )
         return site.get(key)
 
     def _is_postgres_server(self):
@@ -133,18 +135,18 @@ class SiteInfo(object):
                             result.update(attr)
         return result
 
-    def _ssl_cert_folder(self, domain):
-        return os.path.join(self.certificate_folder, domain)
+    def _ssl_cert_folder(self):
+        return os.path.join(self.certificate_folder, self._domain)
 
-    def _ssl_cert(self, domain):
+    def ssl_cert(self):
         return os.path.join(
-            self._ssl_cert_folder(domain),
+            self._ssl_cert_folder(),
             SSL_CERT_NAME
         )
 
-    def _ssl_server_key(self, domain):
+    def ssl_server_key(self):
         return os.path.join(
-            self._ssl_cert_folder(domain),
+            self._ssl_cert_folder(),
             SSL_SERVER_KEY
         )
 
@@ -155,8 +157,8 @@ class SiteInfo(object):
             sites = self._get('sites')
         except TaskError:
             raise SiteNotFoundError(
-                "pillar has no 'sites' key for server '{}', site '{}'"
-                ".".format(self._server_name, self._site_name)
+                "pillar has no 'sites' key for server '{}', domain '{}'"
+                ".".format(self._server_name, self._domain)
             )
         for name, settings in sites.items():
             profile = settings.get('profile', None)
@@ -192,14 +194,14 @@ class SiteInfo(object):
                     "salt when setting up server state".format('php')
                 )
 
-    def _verify_has_ssl_certificate(self, domain):
+    def _verify_has_ssl_certificate(self):
         if not os.path.exists(self.certificate_folder):
             raise TaskError(
                 "Folder for SSL certificates does not exist: {}".format(
                     self.certificate_folder
                 )
             )
-        cert_folder = self._ssl_cert_folder(domain)
+        cert_folder = self._ssl_cert_folder()
         if not os.path.exists(cert_folder):
             raise TaskError(
                 "{}: folder for SSL certificate does not exist: {}".format(
@@ -212,12 +214,12 @@ class SiteInfo(object):
                     domain, cert_folder
                 )
             )
-        certificate = self._ssl_cert(domain)
+        certificate = self.ssl_cert()
         if not os.path.exists(certificate):
             raise TaskError(
                 "{}: certificate file not found '{}'".format(domain, certificate)
             )
-        server_key = self._ssl_server_key(domain)
+        server_key = self.ssl_server_key()
         if not os.path.exists(server_key):
             raise TaskError(
                 "{}: server key not found '{}'".format(domain, server_key)
@@ -348,10 +350,6 @@ class SiteInfo(object):
     def _verify_sites(self):
         sites = self._get('sites')
         for name, settings in sites.items():
-            if 'domain' not in settings:
-                raise TaskError(
-                    "site '{}' does not have a domain name".format(name)
-                )
             if 'ssl' not in settings:
                 raise TaskError(
                     "site '{}' does not have SSL 'True' or "
@@ -360,7 +358,7 @@ class SiteInfo(object):
             if settings.get('lan'):
                 self._verify_lan_not_ssl(settings)
             if settings.get('ssl'):
-                self._verify_has_ssl_certificate(settings.get('domain'))
+                self._verify_has_ssl_certificate()
         self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):
@@ -464,17 +462,7 @@ class SiteInfo(object):
 
     @property
     def domain(self):
-        result = None
-        if self.is_testing:
-            test = self._get_setting('test')
-            result = test.get('domain', None)
-            if not result:
-                raise TaskError(
-                    "we are testing, but there is no 'test', 'domain'."
-                )
-        else:
-            result = self._get_setting('domain')
-        return result
+        return self._domain
 
     @property
     def is_amazon(self):
@@ -605,18 +593,12 @@ class SiteInfo(object):
         return self._server_name
 
     @property
-    def site_name(self):
-        return self._site_name
+    def package(self):
+        return self._get_setting('package')
 
     @property
     def ssl(self):
         return self._get_setting('ssl')
-
-    def ssl_cert(self):
-        return self._ssl_cert(self.domain)
-
-    def ssl_server_key(self):
-        return self._ssl_server_key(self.domain)
 
     @property
     def url(self):
