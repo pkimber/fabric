@@ -42,6 +42,15 @@ class SiteInfo(object):
             )
         return result
 
+    def _get_env(self):
+        """Extra environment variables."""
+        site = self._get_site()
+        env = site.get('env', {})
+        result = {}
+        for key, value in env.items():
+            result[key.upper()] = value
+        return result
+
     def _get_none(self, key):
         """Get data from the pillar (if it exists)."""
         return self._pillar.get(key, None)
@@ -402,6 +411,8 @@ class SiteInfo(object):
                 'DB_IP': self.db_host,
                 'DB_PASS': self.db_pass,
             })
+        # extra env variables
+        result.update(self._get_env())
         if self.is_amazon:
             amazon = self._get('amazon')
             result.update({
