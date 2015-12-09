@@ -59,7 +59,7 @@ class Duplicity(object):
                 "commands (not '{}')".format(backup_or_files)
             )
         self.backup_or_files = backup_or_files
-        self.path = Path(site_info.site_name, file_type)
+        self.path = Path(site_info.domain, file_type)
         self.site_info = site_info
 
     def _display_backup_not_restored(self, restore_to, sql_file):
@@ -114,13 +114,13 @@ class Duplicity(object):
         print(yellow("{}: {} for {}").format(
             command,
             self.backup_or_files,
-            self.site_info.site_name,
+            self.site_info.domain,
         ))
 
     def _repo(self):
         return '{}{}/{}'.format(
             self.site_info.rsync_ssh,
-            self.site_info.site_name,
+            self.site_info.domain,
             self.backup_or_files,
         )
 
@@ -167,7 +167,7 @@ class Duplicity(object):
         local_load_file(database_name, sql_file)
         local_reassign_owner(
             database_name,
-            self.site_info.site_name,
+            self.site_info.db_name,
             self.path.user_name()
         )
         print(green("psql {}").format(database_name))

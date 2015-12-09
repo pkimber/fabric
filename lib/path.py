@@ -10,7 +10,7 @@ from lib.error import TaskError
 class Path(object):
 
     def __init__(self, name, file_type):
-        name = self._remove_ssh_user(name)
+        # name = self._remove_ssh_user(name)
         self.EXTENSION = 'extension'
         self.options = {
             'mysql': {
@@ -26,22 +26,22 @@ class Path(object):
                 self.EXTENSION: 'ftp.tar.gz',
             },
         }
-        self.allowed = string.letters + string.digits + '_'
+        # self.allowed = string.letters + string.digits + '_'
         self.extension = self._get_extension(file_type)
         self.file_type = file_type
         self.name = '{0}_{1}_{2}'.format(
-            name,
+            name.replace('.', '_'),
             datetime.now().strftime('%Y%m%d_%H%M%S'),
             self.user_name()
         )
         self.test_name = 'test_{0}_{1}'.format(
-            name,
+            name.replace('.', '_'),
             self.user_name()
         )
-        if not self._valid(self.name):
-            raise TaskError(
-                'name contains invalid characters: {}'.format(self.name)
-            )
+        # if not self._valid(self.name):
+        #     raise TaskError(
+        #         'name contains invalid characters: {}'.format(self.name)
+        #     )
 
     def _get_extension(self, file_type):
         if file_type in self.options:
@@ -49,15 +49,15 @@ class Path(object):
         else:
             raise TaskError("invalid file type: '{}'".format(file_type))
 
-    def _remove_ssh_user(self, name):
-        result = name
-        if '@' in result:
-            pos = result.find('@')
-            result = result[pos + 1:]
-        return result
+    # def _remove_ssh_user(self, name):
+    #     result = name
+    #     if '@' in result:
+    #         pos = result.find('@')
+    #         result = result[pos + 1:]
+    #     return result
 
-    def _valid(self, value):
-        return all(c in self.allowed for c in value)
+    # def _valid(self, value):
+    #     return all(c in self.allowed for c in value)
 
     def backup_file_name(self):
         return '{}.{}'.format(self.name, self.extension)

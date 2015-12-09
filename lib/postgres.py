@@ -173,12 +173,12 @@ def local_reassign_owner(database_name, from_user_name, to_user_name):
 
 
 def local_user_create(site_info):
-    sql = _sql_user_create(site_info.db_name, site_info.site_name)
+    sql = _sql_user_create(site_info.db_name, site_info.db_name)
     _run_local(sql)
 
 
 def local_user_exists(site_info):
-    sql = _sql_user_exists(site_info.site_name)
+    sql = _sql_user_exists(site_info.db_name)
     result = _run_local_psycopg2(sql)
     return _result_true_or_false(result[0])
 
