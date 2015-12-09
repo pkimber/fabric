@@ -225,11 +225,11 @@ class Duplicity(object):
     def _restore_files_django_site(self, restore_to):
         from_to = self._get_from_to(
             os.path.join(restore_to, 'public'),
-            self.path.local_project_folder_media(self.site_info.site_name),
+            self.path.local_project_folder_media(self.site_info.package),
         )
         from_to = from_to + self._get_from_to(
             os.path.join(restore_to, 'private'),
-            self.path.local_project_folder_media_private(self.site_info.site_name),
+            self.path.local_project_folder_media_private(self.site_info.package),
         )
         self._remove_files_folders(from_to)
         # move the files/folders to the project folder
