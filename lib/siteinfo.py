@@ -174,12 +174,12 @@ class SiteInfo(object):
             if profile:
                 if profile == 'django':
                     has_django = True
-                elif profile == 'php':
+                elif profile in ('php', 'apache_php'):
                     has_php = True
                 else:
                     raise TaskError(
                         "unknown 'profile' for site '{}'"
-                        "(should be 'django' or 'php')".format(name)
+                        "(should be 'django', 'apache_php' or 'php')".format(name)
                     )
             else:
                 raise TaskError(
@@ -195,7 +195,7 @@ class SiteInfo(object):
                     "salt when setting up server state".format('django')
                 )
         if has_php:
-            is_php = self._get_none('php')
+            is_php = self._get_none('php') or self._get_none('apache_php')
             if not is_php:
                 raise TaskError(
                     "cannot find '{}' config key in the pillar "
@@ -250,7 +250,7 @@ class SiteInfo(object):
     def _verify_no_duplicate_uwsgi_ports(self, sites):
         ports = {}
         for site, settings in sites.items():
-            is_php = settings.get('profile') == 'php'
+            is_php = settings.get('profile') in ('php', 'apache_php')
             if not is_php:
                 if 'uwsgi_port' not in settings:
                     raise TaskError(

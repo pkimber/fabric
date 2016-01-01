@@ -142,7 +142,7 @@ def drop_remote_database(site_info):
 
 
 def drop_remote_user(site_info):
-    sql = _sql_drop_user(site_info.site_name)
+    sql = _sql_drop_user(site_info.db_name)
     _run_remote(site_info, sql)
 
 
