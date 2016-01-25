@@ -144,20 +144,26 @@ class SiteInfo(object):
                             result.update(attr)
         return result
 
-    def _ssl_cert_folder(self):
-        return os.path.join(self.certificate_folder, self._domain)
-
-    def ssl_cert(self):
+    def _ssl_cert(self, domain):
         return os.path.join(
-            self._ssl_cert_folder(),
+            self._ssl_cert_folder(domain),
             SSL_CERT_NAME
         )
 
-    def ssl_server_key(self):
+    def _ssl_cert_folder(self, domain):
+        return os.path.join(self.certificate_folder, domain)
+
+    def ssl_cert(self):
+        return self._ssl_cert(self._domain)
+
+    def _ssl_server_key(self, domain):
         return os.path.join(
-            self._ssl_cert_folder(),
+            self._ssl_cert_folder(domain),
             SSL_SERVER_KEY
         )
+
+    def ssl_server_key(self):
+        return self._ssl_cert_folder(self._domain)
 
     def _verify_profile(self):
         has_django = False
@@ -203,14 +209,14 @@ class SiteInfo(object):
                     "salt when setting up server state".format('php')
                 )
 
-    def _verify_has_ssl_certificate(self):
+    def _verify_has_ssl_certificate(self, domain):
         if not os.path.exists(self.certificate_folder):
             raise TaskError(
                 "Folder for SSL certificates does not exist: {}".format(
                     self.certificate_folder
                 )
             )
-        cert_folder = self._ssl_cert_folder()
+        cert_folder = self._ssl_cert_folder(domain)
         if not os.path.exists(cert_folder):
             raise TaskError(
                 "{}: folder for SSL certificate does not exist: {}".format(
@@ -223,12 +229,12 @@ class SiteInfo(object):
                     domain, cert_folder
                 )
             )
-        certificate = self.ssl_cert()
+        certificate = self._ssl_cert(domain)
         if not os.path.exists(certificate):
             raise TaskError(
                 "{}: certificate file not found '{}'".format(domain, certificate)
             )
-        server_key = self.ssl_server_key()
+        server_key = self._ssl_server_key(domain)
         if not os.path.exists(server_key):
             raise TaskError(
                 "{}: server key not found '{}'".format(domain, server_key)
@@ -358,16 +364,16 @@ class SiteInfo(object):
 
     def _verify_sites(self):
         sites = self._get('sites')
-        for name, settings in sites.items():
+        for domain, settings in sites.items():
             if 'ssl' not in settings:
                 raise TaskError(
                     "site '{}' does not have SSL 'True' or "
-                    "'False'".format(name)
+                    "'False'".format(domain)
                 )
             if settings.get('lan'):
                 self._verify_lan_not_ssl(settings)
             if settings.get('ssl'):
-                self._verify_has_ssl_certificate()
+                self._verify_has_ssl_certificate(domain)
         self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):

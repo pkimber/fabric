@@ -45,10 +45,7 @@ from lib.postgres import (
     remote_user_exists,
 )
 from lib.folder import FolderInfo
-from lib.server import (
-    get_server_name_live,
-    get_server_name_test,
-)
+from lib.server import get_server_name
 from lib.siteinfo import SiteInfo
 
 
@@ -295,7 +292,7 @@ def setup(domain):
     print(green("domain: {}".format(domain)))
     # find the server name for this site
     pillar_folder = get_pillar_folder()
-    minion_id = get_server_name_live(pillar_folder, domain)
+    minion_id = get_server_name(pillar_folder, domain)
     print(yellow("minion_id: {}".format(minion_id)))
     env.site_info = SiteInfo(minion_id, domain)
     # Update env.hosts instead of calling execute()
