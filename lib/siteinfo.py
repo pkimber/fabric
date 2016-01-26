@@ -163,7 +163,7 @@ class SiteInfo(object):
         )
 
     def ssl_server_key(self):
-        return self._ssl_cert_folder(self._domain)
+        return self._ssl_server_key(self._domain)
 
     def _verify_profile(self):
         has_django = False
