@@ -10,7 +10,7 @@ from lib.error import (
 from lib.siteinfo import SiteInfo
 
 
-def get_server_name(pillar_folder, site_name):
+def get_server_name(pillar_folder, domain):
     result = None
     with open(os.path.join(pillar_folder, 'top.sls'), 'r') as f:
         data = yaml.load(f.read())
@@ -20,14 +20,13 @@ def get_server_name(pillar_folder, site_name):
                 pass
             else:
                 try:
-                    info = SiteInfo(k, site_name, pillar_folder)
+                    info = SiteInfo(k, domain, pillar_folder)
                     result = k
                 except SiteNotFoundError:
                     pass
     if not result:
         raise TaskError(
-            "cannot find server name for site '{}' ({}) "
-            "in pillar '{}'.{}".format(site_name, status, pillar_folder, msg)
+            "cannot find '{}' in pillar '{}'.".format(domain, pillar_folder)
         )
     if '*' in result:
         raise TaskError(
