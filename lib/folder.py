@@ -125,9 +125,9 @@ class FolderInfo(object):
         result = [os.path.join(folder, '{}.ini'.format(site_name)),]
         if self.site_info.is_celery:
             result.append(
-                os.path.join(folder, '{}_celery_beat.ini'.format(site_name))
+                os.path.join(folder, '{}.celery.beat.ini'.format(site_name))
             )
             result.append(
-                os.path.join(folder, '{}_celery_worker.ini'.format(site_name))
+                os.path.join(folder, '{}.celery.worker.ini'.format(site_name))
             )
         return result
