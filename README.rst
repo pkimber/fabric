@@ -16,7 +16,8 @@ To create the python **2** virtual environment for this project::
   # deactivate any current virtual environments
   deactivate
 
-  virtualenv venv-fabric
+  # '--system-site-packages' allows 'import' of 'duplicity'
+  virtualenv --system-site-packages venv-fabric
   source venv-fabric/bin/activate
   pip install -r requirements.txt
 
