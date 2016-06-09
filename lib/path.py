@@ -88,7 +88,6 @@ class Path(object):
     def local_project_folder(self, site_name):
         return os.path.join(
             os.path.expanduser('~'),
-            'repo',
             'dev',
             'project',
             site_name,
