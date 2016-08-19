@@ -1,4 +1,4 @@
-import json
+# import json
 import os
 import requests
 import yaml
@@ -14,7 +14,7 @@ from selenium.webdriver.support.wait import TimeoutException
 
 from lib.folder import get_test_folder
 from lib.error import TaskError
-from lib.siteinfo import SiteInfo
+# from lib.siteinfo import SiteInfo
 
 
 class BrowserDriver(object):
@@ -40,12 +40,12 @@ class BrowserDriver(object):
 
     def _check_urls(self, file_name):
         for item in self.data['urls']:
-            if not self.URL in item:
+            if self.URL not in item:
                 raise TaskError(
                     "Each item in the list of 'urls' should have a "
                     "'{}': {}".format(self.URL, file_name)
                 )
-            if not self.TITLE in item:
+            if self.TITLE not in item:
                 raise TaskError(
                     "Each item in the list of 'urls' should have a "
                     "'{}': {}".format(self.TITLE, file_name)
