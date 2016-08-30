@@ -48,7 +48,7 @@ class SiteInfo(object):
         env = site.get('env', {})
         result = {}
         for key, value in env.items():
-            result[key.upper()] = value
+            result[key.upper()] = str(value)
         return result
 
     def _get_none(self, key):
