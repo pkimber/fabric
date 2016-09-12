@@ -373,7 +373,8 @@ class SiteInfo(object):
             if settings.get('lan'):
                 self._verify_lan_not_ssl(settings)
             if settings.get('ssl'):
-                self._verify_has_ssl_certificate(domain)
+                if not settings.get('letsencrypt'):
+                    self._verify_has_ssl_certificate(domain)
         self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):
