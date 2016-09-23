@@ -124,22 +124,17 @@ class SiteInfo(object):
                 # unix style file-name match
                 if self._match(self._minion_id, k):
                     for name in v:
-                        names = name.split('.')
-                        file_name = os.path.join(self._pillar_folder, *names)
-                        file_name = file_name + '.sls'
-                        with open(file_name, 'r') as fa:
-                            attr = yaml.load(fa.read())
-                            if len(attr) > 1:
-                                raise TaskError(
-                                    "Unexpected state: 'sls' file contains more "
-                                    "than one key: {}".format(file_name)
-                                )
+                        if isinstance(name, dict):
+                            # top.sls file has a dict e.g. '- match: list'
+                            pass
+                        else:
+                            attr = self._parse(name)
                             # will contain no more than one key (see above)
                             for key in attr.keys():
                                 if key in result:
                                     raise TaskError(
-                                        "key '{}' is already contained in 'result'"
-                                        ": {}".format(key, file_name)
+                                        "key '{}' is already contained in "
+                                        "'result': {}".format(key, file_name)
                                     )
                             result.update(attr)
         return result
@@ -152,6 +147,28 @@ class SiteInfo(object):
                 if result:
                     break
         return result
+
+    def _parse(self, config):
+        """Parse the config from the 'top.sls' file.
+
+        e.g::
+
+          - config.django
+          - config.nginx
+
+
+        """
+        names = config.split('.')
+        file_name = os.path.join(self._pillar_folder, *names)
+        file_name = file_name + '.sls'
+        with open(file_name, 'r') as fa:
+            attr = yaml.load(fa.read())
+            if len(attr) > 1:
+                raise TaskError(
+                    "Unexpected state: 'sls' file contains more "
+                    "than one key: {}".format(file_name)
+                )
+        return attr
 
     def _ssl_cert(self, domain):
         return os.path.join(
