@@ -122,7 +122,7 @@ class SiteInfo(object):
             base = data.get('base')
             for k, v in base.items():
                 # unix style file-name match
-                if fnmatch.fnmatch(self._minion_id, k):
+                if self._match(self._minion_id, k):
                     for name in v:
                         names = name.split('.')
                         file_name = os.path.join(self._pillar_folder, *names)
@@ -142,6 +142,15 @@ class SiteInfo(object):
                                         ": {}".format(key, file_name)
                                     )
                             result.update(attr)
+        return result
+
+    def _match(self, minion_id, salt_top):
+        result = fnmatch.fnmatch(minion_id, salt_top)
+        if not result:
+            for item in salt_top.split(','):
+                result = fnmatch.fnmatch(minion_id, item)
+                if result:
+                    break
         return result
 
     def _ssl_cert(self, domain):
