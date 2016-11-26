@@ -131,13 +131,21 @@ def _run_remote_as_user(site_info, sql):
     return result
 
 
+def database_name(site_info, workflow=None):
+    if workflow:
+        database_name = site_info.db_name_workflow
+    else:
+        database_name = site_info.db_name
+    return database_name
+
+
 def drop_local_database(database_name):
     sql = _sql_drop_database(database_name)
     _run_local(sql)
 
 
-def drop_remote_database(site_info):
-    sql = _sql_drop_database(site_info.db_name)
+def drop_remote_database(site_info, workflow):
+    sql = _sql_drop_database(database_name(site_info, workflow))
     _run_remote_as_user(site_info, sql)
 
 
@@ -183,21 +191,24 @@ def local_user_exists(site_info):
     return _result_true_or_false(result[0])
 
 
-def remote_database_create(site_info, table_space):
-    sql = _sql_database_create(site_info.db_name, table_space)
+def remote_database_create(site_info, table_space, workflow=None):
+    db_name = database_name(site_info, workflow)
+    sql = _sql_database_create(db_name, table_space)
     _run_remote(site_info, sql)
     # amazon rds the 'postgres' user sets the owner (after the database is created)
-    sql = _sql_database_owner(site_info.db_name, site_info.db_name)
+    sql = _sql_database_owner(db_name, site_info.db_name)
     _run_remote(site_info, sql)
 
 
-def remote_database_exists(site_info):
-    sql = _sql_database_exists(site_info.db_name)
+def remote_database_exists(site_info, workflow=None):
+    db_name = database_name(site_info, workflow)
+    sql = _sql_database_exists(db_name)
     result = _run_remote(site_info, sql)
     return _result_true_or_false(result)
 
 
 def remote_user_create(site_info):
+    """Create the user role for the database."""
     sql = _sql_user_create(site_info.db_name, site_info.db_pass)
     _run_remote(site_info, sql)
 

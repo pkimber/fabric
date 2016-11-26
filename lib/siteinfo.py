@@ -156,7 +156,6 @@ class SiteInfo(object):
           - config.django
           - config.nginx
 
-
         """
         names = config.split('.')
         file_name = os.path.join(self._pillar_folder, *names)
@@ -478,6 +477,10 @@ class SiteInfo(object):
         return self._domain.replace('.', '_')
 
     @property
+    def db_name_workflow(self):
+        return '{}_workflow'.format(self._domain.replace('.', '_'))
+
+    @property
     def db_pass(self):
         return self._get_setting('db_pass')
 
@@ -557,6 +560,14 @@ class SiteInfo(object):
         if result:
             result = 'test' in self._get_site()
         return result
+
+    @property
+    def is_workflow(self):
+        site = self._get_site()
+        if 'workflow' in site:
+            return site.get('workflow')
+        else:
+            return False
 
     def backup(self):
         return self._get_setting('backup')

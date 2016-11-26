@@ -35,6 +35,7 @@ from lib.folder import get_pillar_folder
 from lib.duplicity import Duplicity
 from lib.command import DjangoCommand
 from lib.postgres import (
+    database_name,
     drop_remote_database,
     drop_remote_user,
     local_database_exists,
@@ -115,7 +116,7 @@ def backup_php_site(server_name, site_name):
 
 
 @task
-def create_db(table_space=None):
+def create_db(table_space=None, workflow=None):
     """Create a database.
 
     e.g:
@@ -127,9 +128,8 @@ def create_db(table_space=None):
 
     fab test:hatherleigh_info create_db:cbs
     """
-    print(green("create '{}' database on '{}'").format(
-        env.site_info.db_name, env.host_string
-    ))
+    db_name = database_name(env.site_info, workflow)
+    print(green("create '{}' on '{}'").format(db_name, env.host_string))
     if env.site_info.is_mysql:
         # TODO
         # Note: these commands will not work if the root user has a password!
@@ -157,8 +157,13 @@ def create_db(table_space=None):
     else:
         if not remote_user_exists(env.site_info):
             remote_user_create(env.site_info)
-        remote_database_create(env.site_info, table_space)
+        remote_database_create(env.site_info, table_space, workflow)
     print(green('done'))
+
+
+@task
+def create_db_workflow(table_space=None):
+    return create_db(table_space=table_space, workflow=True)
 
 
 @task
@@ -190,19 +195,18 @@ def deploy(version):
 
 
 @task
-def drop_db(date_check=None):
+def drop_db(date_check=None, workflow=None):
     """Drop a database.
 
     You will need to enter the current date and time e.g:
     fab test:hatherleigh_info drop_db:02/02/2015-16:54
     """
     check = datetime.now().strftime('%d/%m/%Y-%H:%M')
-    print(green("drop '{}' database on '{}'").format(
-        env.site_info.db_name, env.host_string
-    ))
+    db_name = database_name(env.site_info, workflow)
+    print(green("drop '{}' database on '{}'").format(db_name, env.host_string))
     if check == date_check:
         message = "Are you sure you want to drop '{}' on '{}'?".format(
-            env.site_info.db_name, env.host_string
+            database_name, env.host_string
         )
         confirm = prompt(
             "To drop the database, enter the name of the current month?"
@@ -213,10 +217,8 @@ def drop_db(date_check=None):
         confirm = prompt("Are you sure you want to drop the database (Y/N)?")
         if confirm == 'Y':
             print('deleting...')
-            if remote_database_exists(env.site_info):
-                drop_remote_database(env.site_info)
-            if remote_user_exists(env.site_info):
-                drop_remote_user(env.site_info)
+            if remote_database_exists(env.site_info, workflow):
+                drop_remote_database(env.site_info, workflow)
         else:
             abort("exit... (you did not enter 'Y' to drop the database)")
     else:
@@ -224,6 +226,23 @@ def drop_db(date_check=None):
             "You cannot drop a database unless you enter the current date and "
             "time as a parameter e.g:\ndrop_db:{}".format(check)
         )
+
+@task
+def drop_db_role():
+    print(green("drop '{}' database role").format(env.site_info.db_name))
+    db_name = env.site_info.db_name
+    if remote_user_exists(env.site_info):
+        print('deleting...')
+        drop_remote_user(env.site_info)
+        print("deleted '{}'".format(db_name))
+    else:
+        print("Cannot delete '{}' role.  It does not exist.".format(db_name))
+
+
+@task
+def drop_db_workflow(date_check=None):
+    return drop_db(date_check=date_check, workflow=True)
+
 
 @task
 def list_current(backup_or_files):

@@ -1,12 +1,10 @@
 awscli==1.6.2
 beautifulsoup4==4.3.2
 devpi-client==2.0.3
-Fabric==1.10.0
+Fabric==1.12.0
 GitPython==0.3.2
 hgapi==1.7.2
 # ipdb requires ipython - raises an error backports.shutil-get-terminal-size; python_version == "2.7"
-# ipdb==0.8
-IPy==0.81
 paramiko==1.15.1
 psycopg2==2.5.4
 pytest-flakes==0.2
