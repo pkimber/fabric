@@ -6,16 +6,16 @@
 # Packages
 *.egg
 *.egg-info
-/dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
 .installed.cfg
+/dist
+bin
+build
+develop-eggs
+eggs
 lib64
+parts
+sdist
+var
 
 # Installer
 pip-log.txt
