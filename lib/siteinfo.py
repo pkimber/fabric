@@ -2,29 +2,17 @@ import fnmatch
 import os
 import yaml
 
-from lib.folder import (
-    get_certificate_folder,
-    get_pillar_folder,
-    SSL_CERT_NAME,
-    SSL_SERVER_KEY,
-)
-from lib.error import (
-    SiteNotFoundError,
-    TaskError,
-)
+from lib.error import SiteNotFoundError, TaskError
+from lib.folder import get_pillar_folder, SSL_CERT_NAME, SSL_SERVER_KEY
 
 
 class SiteInfo(object):
 
-    def __init__(self, minion_id, domain, pillar_folder=None, certificate_folder=None):
+    def __init__(self, minion_id, domain, pillar_folder=None):
         self._minion_id = minion_id
         self._domain = domain
         self._pillar_folder = pillar_folder or get_pillar_folder()
         self._pillar = self._load()
-        if certificate_folder == None:
-            self.certificate_folder = get_certificate_folder()
-        else:
-            self.certificate_folder = certificate_folder
         self._media_root = self._get_media_root()
         self._verify_profile()
         self._verify_sites()
@@ -234,37 +222,6 @@ class SiteInfo(object):
                     "salt when setting up server state".format('php')
                 )
 
-    def _verify_has_ssl_certificate(self, domain):
-        if not os.path.exists(self.certificate_folder):
-            raise TaskError(
-                "Folder for SSL certificates does not exist: {}".format(
-                    self.certificate_folder
-                )
-            )
-        cert_folder = self._ssl_cert_folder(domain)
-        if not os.path.exists(cert_folder):
-            raise TaskError(
-                "{}: folder for SSL certificate does not exist: {}".format(
-                    domain, cert_folder
-                )
-            )
-        if not os.path.isdir(cert_folder):
-            raise TaskError(
-                "{}: expecting folder for SSL certificate at '{}'".format(
-                    domain, cert_folder
-                )
-            )
-        certificate = self._ssl_cert(domain)
-        if not os.path.exists(certificate):
-            raise TaskError(
-                "{}: certificate file not found '{}'".format(domain, certificate)
-            )
-        server_key = self._ssl_server_key(domain)
-        if not os.path.exists(server_key):
-            raise TaskError(
-                "{}: server key not found '{}'".format(domain, server_key)
-            )
-
     def _verify_lan_not_ssl(self, settings):
         """
         If installing to a LAN, then cannot use SSL.
@@ -397,9 +354,6 @@ class SiteInfo(object):
                 )
             if settings.get('lan'):
                 self._verify_lan_not_ssl(settings)
-            if settings.get('ssl'):
-                if not settings.get('letsencrypt'):
-                    self._verify_has_ssl_certificate(domain)
         self._verify_no_duplicate_uwsgi_ports(sites)
 
     def env(self):

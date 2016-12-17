@@ -11,16 +11,6 @@ SSL_CERT_NAME = 'ssl-unified.crt'
 SSL_SERVER_KEY = 'server.key'
 
 
-def get_certificate_folder():
-    certificate_folder = os.path.join(INFO_FOLDER, 'ssl-cert')
-    if not os.path.exists(certificate_folder):
-        raise TaskError(
-            "certificate folder does not exist in the standard location "
-            "on your workstation: {}".format(certificate_folder)
-        )
-    return certificate_folder
-
-
 def get_pillar_folder(pillar_folder=None):
     """Find the pillar folder on your local workstation."""
     if pillar_folder == None:
