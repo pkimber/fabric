@@ -16,7 +16,6 @@ class TestSiteInfoPhp(unittest.TestCase):
             'drop-temp',
             'hatherleigh_info',
             get_test_data_folder('data_php'),
-            get_test_cert_folder('cert')
         )
 
     def test_is_mysql(self):
@@ -48,7 +47,6 @@ class TestSiteInfoPhp(unittest.TestCase):
             'drop-user',
             'very_long_site_name',
             get_test_data_folder('data_php'),
-            get_test_cert_folder('cert')
         )
         with self.assertRaises(TaskError) as cm:
             site_info.db_user()

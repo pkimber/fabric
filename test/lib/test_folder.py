@@ -74,37 +74,6 @@ class TestFolderInfo(unittest.TestCase):
             cm.exception.value
         )
 
-    def test_ssl_cert(self):
-        self.assertEquals(
-            '/srv/ssl/westcountrycoders.co.uk/ssl-unified.crt',
-            self.folder.ssl_cert()
-        )
-
-    def test_ssl_server_key(self):
-        self.assertEquals(
-            '/srv/ssl/westcountrycoders.co.uk/server.key',
-            self.folder.ssl_server_key()
-        )
-
-    def test_ssl_cert_folder(self):
-        self.assertEquals(
-            '/srv/ssl/westcountrycoders.co.uk',
-            self.folder.ssl_cert_folder()
-        )
-
-    def test_ssl_cert_folder_testing(self):
-        folder = FolderInfo(self._site_info_testing())
-        self.assertEquals(
-            '/srv/ssl/test.kbsoftware.co.uk',
-            folder.ssl_cert_folder()
-        )
-
-    def test_ssl_folder(self):
-        self.assertEquals(
-            '/srv/ssl',
-            self.folder.ssl_folder()
-        )
-
     def test_srv_folder(self):
         self.assertEquals(
             '/srv',

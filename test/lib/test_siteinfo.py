@@ -24,7 +24,6 @@ def get_site_info():
         'drop-temp',
         'csw_web',
         get_test_data_folder('data'),
-        get_test_cert_folder('cert'),
     )
 
 

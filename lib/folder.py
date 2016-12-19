@@ -86,18 +86,6 @@ class FolderInfo(object):
             self.site_info.domain,
         )
 
-    def ssl_cert(self):
-        return os.path.join(self.ssl_cert_folder(), SSL_CERT_NAME)
-
-    def ssl_server_key(self):
-        return os.path.join(self.ssl_cert_folder(), SSL_SERVER_KEY)
-
-    def ssl_cert_folder(self):
-        return os.path.join(self.ssl_folder(), self.site_info.domain)
-
-    def ssl_folder(self):
-        return os.path.join(self.srv_folder(), 'ssl')
-
     def srv_folder(self):
         return os.path.join('/', 'srv')
 
