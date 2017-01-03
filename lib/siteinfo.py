@@ -501,7 +501,7 @@ class SiteInfo(object):
 
     @property
     def is_php(self):
-        return self._get_setting('profile') == 'php'
+        return self._get_setting('profile') in ('php', 'apache_php')
 
     @property
     def is_postgres(self):
