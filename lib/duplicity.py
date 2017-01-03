@@ -147,9 +147,9 @@ class Duplicity(object):
 
     def _restore_database_mysql(self, sql_file):
         local_project_folder = self.path.local_project_folder(
-            self.site_info.site_name
+            self.site_info.domain
         )
-        to_sql_file = os.path.join(local_project_folder, "mysqldump.sql")
+        to_sql_file = os.path.join(local_project_folder, 'mysqldump.sql')
         from_to = []
         from_to.append((sql_file, to_sql_file))
         self._remove_files_folders(from_to)
@@ -239,7 +239,7 @@ class Duplicity(object):
     def _restore_files_php_site(self, restore_to):
         from_to = self._get_from_to(
             restore_to,
-            self.path.local_project_folder(self.site_info.site_name),
+            self.path.local_project_folder(self.site_info.domain),
         )
         self._remove_files_folders(from_to)
         # move the files/folders to the project folder
