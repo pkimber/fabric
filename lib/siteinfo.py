@@ -122,7 +122,7 @@ class SiteInfo(object):
                                 if key in result:
                                     raise TaskError(
                                         "key '{}' is already contained in "
-                                        "'result': {}".format(key, file_name)
+                                        "'{}".format(key, self._minion_id)
                                     )
                             result.update(attr)
         return result
@@ -193,6 +193,8 @@ class SiteInfo(object):
             if profile:
                 if profile == 'django':
                     has_django = True
+                elif profile == 'mattermost':
+                    pass
                 elif profile in ('php', 'apache_php'):
                     has_php = True
                 else:
@@ -238,8 +240,10 @@ class SiteInfo(object):
     def _verify_no_duplicate_uwsgi_ports(self, sites):
         ports = {}
         for site, settings in sites.items():
-            is_php = settings.get('profile') in ('php', 'apache_php')
-            if not is_php:
+            profile = settings.get('profile')
+            is_mattermost = profile == 'mattermost'
+            is_php = profile in ('php', 'apache_php')
+            if not is_mattermost and not is_php:
                 if 'uwsgi_port' not in settings:
                     raise TaskError(
                         "site '{}' does not have a uWSGI port".format(site)
@@ -375,6 +379,7 @@ class SiteInfo(object):
             'DOMAIN': self.domain,
             'FTP_STATIC_DIR': 'z1',
             'FTP_STATIC_URL': 'a1',
+            'HOST_NAME': 'blue',
             'MAILGUN_ACCESS_KEY': 'abc',
             'MAILGUN_SERVER_NAME': 'def',
             'MANDRILL_API_KEY': 'b3',
