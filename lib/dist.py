@@ -151,7 +151,7 @@ def get_package_data(packages):
     for package in packages:
         if os.path.exists(package) and os.path.isdir(package):
             for folder_name in os.listdir(package):
-                if folder_name in ('static', 'templates'):
+                if folder_name in ('data', 'static', 'templates'):
                     folder = os.path.join(package, folder_name)
                     if os.path.isdir(folder):
                         walk = filtered_walk(folder)
