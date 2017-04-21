@@ -48,6 +48,7 @@ def install_requirements(prefix, install_folder, venv_folder):
     filename = os.path.join(install_folder, 'requirements/production.txt')
     print(green("requirements: {}".format(filename)))
     pip_bin = os.path.join(venv_folder, 'bin', 'pip')
+    run("{} install --upgrade pip".format(pip_bin))
     run("{} install -r {}".format(pip_bin, filename))
 
 
