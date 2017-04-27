@@ -191,7 +191,9 @@ class SiteInfo(object):
         for name, settings in sites.items():
             profile = settings.get('profile', None)
             if profile:
-                if profile == 'django':
+                if profile == 'alfresco':
+                    pass
+                elif profile == 'django':
                     has_django = True
                 elif profile == 'mattermost':
                     pass
@@ -241,9 +243,10 @@ class SiteInfo(object):
         ports = {}
         for site, settings in sites.items():
             profile = settings.get('profile')
+            is_alfresco = profile == 'alfresco'
             is_mattermost = profile == 'mattermost'
             is_php = profile in ('php', 'apache_php')
-            if not is_mattermost and not is_php:
+            if not is_alfresco and not is_mattermost and not is_php:
                 if 'uwsgi_port' not in settings:
                     raise TaskError(
                         "site '{}' does not have a uWSGI port".format(site)
