@@ -54,10 +54,11 @@ def install_requirements(prefix, install_folder, venv_folder):
 
 def mkvirtualenv(venv_folder):
     print(green("mkvirtualenv: {}".format(venv_folder)))
-    run('/usr/bin/virtualenv {} {}'.format(
-        '--python=/usr/bin/python3',
-        venv_folder,
-    ))
+    run('python3 -m venv {}'.format(venv_folder))
+    # run('/usr/bin/virtualenv {} {}'.format(
+    #     '--python=/usr/bin/python3',
+    #     venv_folder,
+    # ))
 
 
 def link_install_to_live_folder(install_folder, live_folder):
